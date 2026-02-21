@@ -210,7 +210,7 @@ const KernSite = () => {
 
   const stats = [
     { n: '3', s: '+', label: 'Years building web systems' },
-    { n: '10', s: '+', label: 'Systems delivered' },
+    { n: '50', s: '+', label: 'Systems delivered' },
     { n: '100', s: '%', label: 'Client satisfaction rate' },
     { n: '4', s: 'wk', label: 'Average time to first launch' }
   ];
