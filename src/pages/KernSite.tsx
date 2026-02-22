@@ -216,11 +216,11 @@ const KernSite: React.FC = () => {
     .av{display:flex;align-items:center;justify-content:center;font-weight:600;color:white;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.14);transition:transform .2s;font-family:${INTER};border-radius:8px}
     .av:hover{transform:translateY(-3px)}
     .eyebrow{font-size:9px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);display:block;font-family:${INTER}}
-    .htw{display:flex;align-items:center;gap:9px;justify-content:center;flex-wrap:wrap;margin-bottom:3px}
+    .htw{display:flex;align-items:center;gap:9px;justify-content:center;flex-wrap:wrap;margin-bottom:3px; position:relative;}
     .ht{font-family:${INTER};font-size:clamp(1.75rem,4vw,3.1rem);font-weight:600;line-height:1.1;color:var(--text);letter-spacing:-.025em}
     .hbadge{position:relative;display:inline-block}
     .himg{width:46px;height:35px;border-radius:8px;overflow:hidden;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;box-shadow:rgba(255,255,255,.25) 0 2px 1.5px inset,rgb(186,176,170) 0 .5px 0;flex-shrink:0}
-    .htag{position:absolute;top:-11px;right:-90%;background:var(--pill);color:white;font-size:8.5px;font-weight:400;border-radius:var(--rf);padding:3px 8px;white-space:nowrap;font-family:${INTER}}
+    .htag{position:absolute;top:-11px;right:0; background:var(--pill); ...}
     .hdesc{font-size:12px;line-height:1.7;color:var(--muted);max-width:380px;margin:11px auto 0;font-weight:300;font-family:${INTER}}
     .hact{display:flex;align-items:center;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:18px}
     .bp{display:inline-flex;align-items:center;gap:5px;background:var(--accent);color:white;font-family:${INTER};font-size:11.5px;font-weight:500;border:none;border-radius:var(--rf);padding:7px 18px;cursor:pointer;transition:all .2s;box-shadow:0 3px 10px rgba(0,0,0,.18)}
