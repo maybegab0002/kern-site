@@ -37,8 +37,13 @@ const KernSite: React.FC = () => {
   const [submitStatus, setSubmitStatus] = useState<SubmitStatus>("idle");
   const [lastSubmitTime, setLastSubmitTime] = useState<number>(0);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [faqRipples, setFaqRipples] = useState<{ id: number; x: number; y: number; row: number }[]>([]);
   const [hoveredWord, setHoveredWord] = useState<string | null>(null);
   const [atBottom, setAtBottom] = useState(false);
+  const [founderHover, setFounderHover] = useState(false);
+  const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
+  const [galleryTooltip, setGalleryTooltip] = useState<{ label: string; sub: string } | null>(null);
+  const [galleryCursor, setGalleryCursor] = useState({ x: 0, y: 0 });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -199,6 +204,36 @@ const KernSite: React.FC = () => {
     .ndot{width:6px;height:6px;border-radius:50%;background:#82D49F}
     .ndot-ping{position:absolute;width:6px;height:6px;border-radius:50%;background:#82D49F;opacity:.5;animation:ping 1.5s ease-in-out infinite}
     @keyframes ping{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.8);opacity:0}}
+
+    /* Animated rainbow border for CTA */
+    .cta-wrap{position:relative;border-radius:var(--rf);padding:2px;background:linear-gradient(90deg,#ff6b6b,#ffd93d,#6bcb77,#4d96ff,#c77dff,#ff6b6b);background-size:300% 300%;animation:rainbowBorder 3s linear infinite}
+    @keyframes rainbowBorder{0%{background-position:0% 50%}100%{background-position:300% 50%}}
+    .cta-inner{display:flex;align-items:center;gap:5px;background:var(--accent);color:white;font-family:${INTER};font-size:11px;font-weight:500;border:none;border-radius:calc(var(--rf) - 2px);padding:6px 14px;cursor:pointer;transition:all .2s;white-space:nowrap}
+    .cta-inner:hover{background:#3a3a3a}
+
+    /* Founder tooltip */
+    .founder-tooltip{
+      position:fixed;pointer-events:none;z-index:9999;
+      width:160px;height:160px;border-radius:16px;overflow:hidden;
+      box-shadow:0 16px 48px rgba(0,0,0,.28);
+      border:2px solid rgba(255,255,255,.85);
+      transition:opacity .2s,transform .2s;
+      transform:translate(18px,-80px);
+    }
+    .founder-tooltip img{width:100%;height:100%;object-fit:cover;display:block}
+
+    /* Gallery cursor tooltip */
+    .gallery-cursor-tip{
+      position:fixed;pointer-events:none;z-index:9999;
+      background:rgba(15,15,15,.92);backdrop-filter:blur(8px);
+      border-radius:10px;padding:9px 13px;
+      transform:translate(14px,-50%);
+      border:1px solid rgba(255,255,255,.1);
+      box-shadow:0 8px 28px rgba(0,0,0,.3);
+      min-width:120px;
+    }
+    .gct-label{font-size:11.5px;font-weight:600;color:white;font-family:${INTER};margin-bottom:2px}
+    .gct-sub{font-size:9.5px;font-weight:300;color:rgba(255,255,255,.55);font-family:${INTER}}
 
     .hero{position:relative;padding:150px 32px 70px;display:flex;flex-direction:column;align-items:center;text-align:center;overflow:visible}
     .bottom-fog{
@@ -444,14 +479,16 @@ const KernSite: React.FC = () => {
 
     /* FAQ */
     .faq{border:1px solid var(--border);border-radius:var(--rxl);overflow:hidden;background:white;box-shadow:0 2px 8px rgba(0,0,0,.04)}
-    .fi{border-bottom:1px solid var(--border)}
+    .fi{border-bottom:1px solid var(--border);position:relative;overflow:hidden}
     .fi:last-child{border-bottom:none}
-    .fb{width:100%;display:flex;align-items:center;justify-content:space-between;gap:1.5rem;padding:13px 18px;background:transparent;border:none;cursor:pointer;text-align:left;font-family:${INTER};transition:background .2s}
+    .faq-ripple{position:absolute;border-radius:50%;background:rgba(39,43,48,.07);transform:scale(0);animation:faq-ripple-anim .65s cubic-bezier(.22,1,.36,1) forwards;pointer-events:none;z-index:0}
+    @keyframes faq-ripple-anim{0%{transform:scale(0);opacity:1}100%{transform:scale(4);opacity:0}}
+    .fb{width:100%;display:flex;align-items:center;justify-content:space-between;gap:1.5rem;padding:13px 18px;background:transparent;border:none;cursor:pointer;text-align:left;font-family:${INTER};transition:background .2s;position:relative;z-index:1}
     .fb:hover{background:rgba(39,43,48,.02)}
     .fq{font-family:${INTER};font-size:.8rem;font-weight:500;color:var(--text);line-height:1.4}
     .ficon{width:22px;height:22px;border-radius:50%;flex-shrink:0;border:1px solid var(--border-s);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px;transition:all .3s;transform-origin:center}
     .ficon.open{background:var(--accent);border-color:var(--accent);color:white;transform:rotate(45deg)}
-    .fbody{display:grid;grid-template-rows:0fr;transition:grid-template-rows .35s cubic-bezier(.4,0,.2,1)}
+    .fbody{display:grid;grid-template-rows:0fr;transition:grid-template-rows .35s cubic-bezier(.4,0,.2,1);position:relative;z-index:1}
     .fbody.open{grid-template-rows:1fr}
     .fbi{overflow:hidden}
     .fa{padding:0 18px 13px;font-size:11.5px;color:var(--muted);line-height:1.78;font-weight:300;max-width:520px;font-family:${INTER}}
@@ -619,13 +656,15 @@ const KernSite: React.FC = () => {
             ))}
           </div>
 
-          <button className="cta" onClick={() => scrollTo("contact")}>
-            <span style={{ position: "relative", display: "inline-flex", width: 7, height: 7 }}>
-              <span className="ndot-ping" style={{ position: "absolute" }} />
-              <span className="ndot" style={{ position: "relative" }} />
-            </span>
-            Open for work
-          </button>
+          <div className="cta-wrap" onClick={() => scrollTo("contact")}>
+            <button className="cta-inner">
+              <span style={{ position: "relative", display: "inline-flex", width: 7, height: 7 }}>
+                <span className="ndot-ping" style={{ position: "absolute" }} />
+                <span className="ndot" style={{ position: "relative" }} />
+              </span>
+              Open for work
+            </button>
+          </div>
         </div>
       </nav>
 
@@ -654,7 +693,14 @@ const KernSite: React.FC = () => {
           Founder
         </motion.span>
         <motion.div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }} initial={{ opacity:0, scale:0.85 }} animate={{ opacity:1, scale:1 }} transition={{ duration:0.6, delay:0.18, ease:[0.22,1,0.36,1] }}>
-          <img src={kernfounder} alt="Founder" style={{ width: 44, height: 44, borderRadius: "10px", objectFit: "cover", boxShadow: "0 2px 10px rgba(0,0,0,.15)", border: "2px solid rgba(255,255,255,.8)" }} />
+          <img
+            src={kernfounder}
+            alt="Founder"
+            style={{ width: 44, height: 44, borderRadius: "10px", objectFit: "cover", boxShadow: "0 2px 10px rgba(0,0,0,.15)", border: "2px solid rgba(255,255,255,.8)", cursor: "pointer" }}
+            onMouseEnter={() => setFounderHover(true)}
+            onMouseLeave={() => setFounderHover(false)}
+            onMouseMove={(e) => setCursorPos({ x: e.clientX, y: e.clientY })}
+          />
         </motion.div>
 
         <motion.div style={{ marginBottom: 3 }} initial={{ opacity:0, y:22 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.7, delay:0.28, ease:[0.22,1,0.36,1] }}>
@@ -714,25 +760,12 @@ const KernSite: React.FC = () => {
                   visible:{ opacity:1, scale:1, transition:{ duration:0.6, ease:[0.22,1,0.36,1] } },
                 }}
                 onClick={() => navigate(route)}
+                onMouseEnter={() => setGalleryTooltip({ label, sub })}
+                onMouseLeave={() => setGalleryTooltip(null)}
+                onMouseMove={(e) => setGalleryCursor({ x: e.clientX, y: e.clientY })}
               >
                 <img src={img} alt={label} className="gallery-img" loading="lazy" />
-                <div className="gallery-overlay">
-                  <div className="gallery-overlay-inner">
-                    <div className="gallery-label">
-                      <span className="gallery-label-dot" />
-                      <div>
-                        <div>{label}</div>
-                        <div style={{ fontSize:9, fontWeight:300, opacity:.75, marginTop:1 }}>{sub}</div>
-                      </div>
-                    </div>
-                    <button className="gallery-btn" onClick={(e) => { e.stopPropagation(); navigate(route); }}>
-                      View project
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M5 12h14M12 5l7 7-7 7"/>
-                      </svg>
-                    </button>
-                  </div>
-                </div>
+
               </motion.div>
             ))}
           </motion.div>
@@ -885,7 +918,7 @@ const KernSite: React.FC = () => {
           <motion.div style={{ display: "flex", justifyContent: "center", marginTop: 36 }} initial={{ opacity:0, y:12 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ duration:0.5, delay:0.2 }}>
             <button className="bp" onClick={() => scrollTo("contact")}>
               <span className="bdot" />
-              See more work
+              I want a System like this!
             </button>
           </motion.div>
         </div>
@@ -1185,7 +1218,28 @@ const KernSite: React.FC = () => {
               { q: "How do you handle pricing?", a: "Projects are quoted with a fixed price after scoping — no surprises. Ongoing retainers are billed monthly. We don't do hourly billing." },
             ].map(({ q, a }, i) => (
               <motion.div key={i} className="fi" variants={{ hidden:{ opacity:0, y:10 }, visible:{ opacity:1, y:0, transition:{ duration:0.45, ease:[0.22,1,0.36,1] } } }}>
-                <button className="fb" onClick={() => setOpenFaq(openFaq === i ? null : i)}>
+                {faqRipples.filter(r => r.row === i).map(r => (
+                  <span
+                    key={r.id}
+                    className="faq-ripple"
+                    style={{ left: r.x, top: r.y, width: 120, height: 120, marginLeft: -60, marginTop: -60 }}
+                    onAnimationEnd={() => setFaqRipples(prev => prev.filter(rr => rr.id !== r.id))}
+                  />
+                ))}
+                <button
+                  className="fb"
+                  onClick={(e) => {
+                    setOpenFaq(openFaq === i ? null : i);
+                    const rect = (e.currentTarget.closest('.fi') as HTMLElement)?.getBoundingClientRect();
+                    if (rect) {
+                      const iconEl = e.currentTarget.querySelector('.ficon') as HTMLElement;
+                      const iconRect = iconEl?.getBoundingClientRect();
+                      const x = iconRect ? iconRect.left + iconRect.width / 2 - rect.left : e.clientX - rect.left;
+                      const y = iconRect ? iconRect.top + iconRect.height / 2 - rect.top : e.clientY - rect.top;
+                      setFaqRipples(prev => [...prev, { id: Date.now(), x, y, row: i }]);
+                    }
+                  }}
+                >
                   <span className="fq">{q}</span>
                   <span className={`ficon${openFaq === i ? " open" : ""}`}>+</span>
                 </button>
@@ -1378,6 +1432,26 @@ const KernSite: React.FC = () => {
           </div>
         </div>
       </footer>
+      {/* Founder hover tooltip */}
+      {founderHover && (
+        <div
+          className="founder-tooltip"
+          style={{ left: cursorPos.x, top: cursorPos.y, opacity: founderHover ? 1 : 0 }}
+        >
+          <img src={kernfounder} alt="Founder" />
+        </div>
+      )}
+
+      {/* Gallery cursor tooltip */}
+      {galleryTooltip && (
+        <div
+          className="gallery-cursor-tip"
+          style={{ left: galleryCursor.x, top: galleryCursor.y }}
+        >
+          <div className="gct-label">{galleryTooltip.label}</div>
+          <div className="gct-sub">{galleryTooltip.sub}</div>
+        </div>
+      )}
     </div>
   );
 };
