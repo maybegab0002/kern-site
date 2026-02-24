@@ -1400,7 +1400,6 @@ const KernSite: React.FC = () => {
               [
                 ["work", "Our work"],
                 ["services", "Services"],
-                ["contact", "Our team"],
                 ["contact", "Contact Us"],
               ] as const
             ).map(([id, label]) => (
