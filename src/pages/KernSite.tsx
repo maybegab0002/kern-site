@@ -214,13 +214,31 @@ const KernSite: React.FC = () => {
     /* Founder tooltip */
     .founder-tooltip{
       position:fixed;pointer-events:none;z-index:9999;
-      width:160px;height:160px;border-radius:16px;overflow:hidden;
+      width:160px;border-radius:16px;overflow:hidden;
       box-shadow:0 16px 48px rgba(0,0,0,.28);
       border:2px solid rgba(255,255,255,.85);
       transition:opacity .2s,transform .2s;
       transform:translate(18px,-80px);
+      background:#fff;
     }
-    .founder-tooltip img{width:100%;height:100%;object-fit:cover;display:block}
+    .founder-tooltip img{width:100%;height:160px;object-fit:cover;display:block}
+    .founder-tooltip-name{
+      padding:8px 10px 9px;
+      text-align:center;
+      font-family:${INTER};
+      font-size:11px;
+      font-weight:600;
+      color:#1a1a1a;
+      letter-spacing:.01em;
+      background:#fff;
+    }
+    .founder-tooltip-role{
+      display:block;
+      font-size:9.5px;
+      font-weight:300;
+      color:rgba(26,26,26,.5);
+      margin-top:1px;
+    }
 
     /* Gallery cursor tooltip */
     .gallery-cursor-tip{
@@ -1438,6 +1456,10 @@ const KernSite: React.FC = () => {
           style={{ left: cursorPos.x, top: cursorPos.y, opacity: founderHover ? 1 : 0 }}
         >
           <img src={kernfounder} alt="Founder" />
+          <div className="founder-tooltip-name">
+            Gab Enciso
+            <span className="founder-tooltip-role">Designer & Developer</span>
+          </div>
         </div>
       )}
 
