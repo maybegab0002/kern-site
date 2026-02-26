@@ -211,6 +211,181 @@ const KernSite: React.FC = () => {
     .cta-inner{display:flex;align-items:center;gap:5px;background:var(--accent);color:white;font-family:${INTER};font-size:11px;font-weight:500;border:none;border-radius:calc(var(--rf) - 2px);padding:6px 14px;cursor:pointer;transition:all .2s;white-space:nowrap}
     .cta-inner:hover{background:#3a3a3a}
 
+    /* ── NEW MINI ANIMATIONS ── */
+
+    /* Floating hero particles */
+    .hero-particle{
+      position:absolute;pointer-events:none;border-radius:50%;
+      animation:float-particle var(--dur,8s) ease-in-out infinite;
+      animation-delay:var(--delay,0s);
+      opacity:0;
+    }
+    @keyframes float-particle{
+      0%{transform:translate(0,0) scale(1);opacity:0}
+      15%{opacity:var(--op,.25)}
+      85%{opacity:var(--op,.25)}
+      100%{transform:translate(var(--tx,20px),var(--ty,-60px)) scale(.6);opacity:0}
+    }
+
+    /* Logo — continuous slow rock */
+    .logo-box-inner img{
+      animation:logo-rock 4s ease-in-out infinite;
+    }
+    @keyframes logo-rock{
+      0%,100%{transform:rotate(0deg)}
+      25%{transform:rotate(-6deg)}
+      75%{transform:rotate(6deg)}
+    }
+
+    /* Marquee dots — continuous slow pulse */
+    .mq-dot{
+      animation:dot-pop 2.4s ease-in-out infinite;
+    }
+    @keyframes dot-pop{
+      0%,100%{transform:scale(1);opacity:1}
+      50%{transform:scale(1.8);opacity:.5}
+    }
+
+    /* Service card icons — continuous gentle float */
+    .svc-ic{
+      animation:icon-float 3s ease-in-out infinite;
+    }
+    .svc:nth-child(2) .svc-ic{animation-delay:.4s}
+    .svc:nth-child(3) .svc-ic{animation-delay:.8s}
+    .svc:nth-child(4) .svc-ic{animation-delay:1.2s}
+    .svc:nth-child(5) .svc-ic{animation-delay:1.6s}
+    .svc:nth-child(6) .svc-ic{animation-delay:2s}
+    @keyframes icon-float{
+      0%,100%{transform:translateY(0)}
+      50%{transform:translateY(-4px)}
+    }
+
+    /* Process step numbers — continuous shimmer */
+    .pbig{
+      animation:num-shimmer 3.5s ease-in-out infinite;
+    }
+    .pst:nth-child(2) .pbig{animation-delay:.5s}
+    .pst:nth-child(3) .pbig{animation-delay:1s}
+    .pst:nth-child(4) .pbig{animation-delay:1.5s}
+    @keyframes num-shimmer{
+      0%,100%{color:rgba(0,0,0,.04)}
+      50%{color:rgba(39,43,48,.2)}
+    }
+
+    /* Work card — periodic shine sweep */
+    .work2-card{position:relative;overflow:hidden}
+    .work2-card::after{
+      content:'';
+      position:absolute;inset:0;
+      background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.13) 50%,transparent 65%);
+      transform:translateX(-150%);
+      pointer-events:none;
+      animation:card-shine 4s ease-in-out infinite;
+    }
+    .work2-card:nth-child(2)::after{animation-delay:1.3s}
+    .work2-card:nth-child(3)::after{animation-delay:2.6s}
+    @keyframes card-shine{
+      0%,70%,100%{transform:translateX(-150%)}
+      40%{transform:translateX(200%)}
+    }
+
+    /* Contact form input — glow ring on focus */
+    .cf-input:focus,.cf-textarea:focus,.cf-select:focus{
+      border-color:rgba(39,43,48,.4);
+      background:rgba(39,43,48,.02);
+      box-shadow:0 0 0 3px rgba(39,43,48,.06);
+    }
+
+    /* Kern pcard bar pulse */
+    .pi .pbar{
+      animation:bar-pulse 2.4s ease-in-out infinite;
+    }
+    @keyframes bar-pulse{
+      0%,100%{opacity:1}
+      50%{opacity:.5}
+    }
+
+    /* "Best choice" badge bounce */
+    .pbest{
+      animation:best-bounce 3s ease-in-out infinite;
+    }
+    @keyframes best-bounce{
+      0%,100%{transform:translateY(0)}
+      50%{transform:translateY(-3px)}
+    }
+
+    /* Footer links — keep hover underline (intentional interaction) */
+    .flink{position:relative}
+    .flink::after{content:'';position:absolute;left:0;bottom:-1px;width:0;height:1px;background:var(--text);transition:width .22s ease}
+    .flink:hover::after{width:100%}
+
+    /* Nav pill link underline — keep hover (intentional interaction) */
+    .plink{position:relative}
+    .plink::after{content:'';position:absolute;left:50%;bottom:0px;width:0;height:1.5px;background:rgba(255,255,255,.5);border-radius:9px;transform:translateX(-50%);transition:width .2s ease}
+    .plink:hover::after{width:60%}
+
+    /* Gallery item — continuous border glow breathe */
+    .gallery-item{
+      animation:gallery-breathe 4s ease-in-out infinite;
+    }
+    .gallery-item:nth-child(2){animation-delay:1.3s}
+    .gallery-item:nth-child(3){animation-delay:2.6s}
+    @keyframes gallery-breathe{
+      0%,100%{box-shadow:0 2px 12px rgba(0,0,0,.07)}
+      50%{box-shadow:0 8px 32px rgba(0,0,0,.14)}
+    }
+
+    /* Quality cards — continuous gentle float staggered */
+    .qc{
+      animation:qc-float 3.5s ease-in-out infinite;
+    }
+    .qc:nth-child(2){animation-delay:.5s}
+    .qc:nth-child(3){animation-delay:1s}
+    .qc:nth-child(4){animation-delay:1.5s}
+    .qc:nth-child(5){animation-delay:2s}
+    .qc:nth-child(6){animation-delay:2.5s}
+    @keyframes qc-float{
+      0%,100%{transform:translateY(0)}
+      50%{transform:translateY(-4px)}
+    }
+
+    /* Quality card icons — continuous spin-rock */
+    .qci{
+      animation:qci-rock 4s ease-in-out infinite;
+    }
+    .qc:nth-child(2) .qci{animation-delay:.6s}
+    .qc:nth-child(3) .qci{animation-delay:1.2s}
+    .qc:nth-child(4) .qci{animation-delay:1.8s}
+    .qc:nth-child(5) .qci{animation-delay:2.4s}
+    .qc:nth-child(6) .qci{animation-delay:3s}
+    @keyframes qci-rock{
+      0%,100%{transform:rotate(0deg) scale(1)}
+      25%{transform:rotate(-8deg) scale(1.05)}
+      75%{transform:rotate(8deg) scale(1.05)}
+    }
+
+    /* Primary buttons — continuous shimmer pulse */
+    .bp{position:relative;overflow:hidden}
+    .bp::after{
+      content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+      background:linear-gradient(90deg,transparent 30%,rgba(255,255,255,.1) 50%,transparent 70%);
+      transform:translateX(-150%);
+      animation:btn-shine 2.8s ease-in-out infinite;
+    }
+    @keyframes btn-shine{
+      0%,60%,100%{transform:translateX(-150%)}
+      35%{transform:translateX(200%)}
+    }
+
+    /* Status dot glow pulse */
+    .ndot{
+      animation:dot-shadow-pulse 2s ease-in-out infinite;
+    }
+    @keyframes dot-shadow-pulse{
+      0%,100%{box-shadow:0 0 0 0 rgba(130,212,159,.0)}
+      50%{box-shadow:0 0 6px 3px rgba(130,212,159,.35)}
+    }
+
     /* Founder tooltip */
     .founder-tooltip{
       position:fixed;pointer-events:none;z-index:9999;
@@ -688,6 +863,27 @@ const KernSite: React.FC = () => {
 
       {/* HERO */}
       <section id="hero" className="hero">
+        {/* Floating ambient particles */}
+        {[
+          { left:"12%", top:"30%", size:5, dur:"7s", delay:"0s",  tx:"30px",  ty:"-80px", op:".18" },
+          { left:"80%", top:"55%", size:4, dur:"9s", delay:"1.2s",tx:"-20px", ty:"-70px", op:".14" },
+          { left:"55%", top:"70%", size:6, dur:"8s", delay:"2.5s",tx:"15px",  ty:"-90px", op:".12" },
+          { left:"25%", top:"60%", size:3, dur:"10s",delay:"0.7s",tx:"-30px", ty:"-60px", op:".16" },
+          { left:"70%", top:"35%", size:5, dur:"6s", delay:"3.1s",tx:"25px",  ty:"-75px", op:".13" },
+          { left:"40%", top:"80%", size:4, dur:"11s",delay:"1.8s",tx:"-15px", ty:"-85px", op:".1"  },
+        ].map((p, i) => (
+          <div
+            key={i}
+            className="hero-particle"
+            style={{
+              left: p.left, top: p.top,
+              width: p.size, height: p.size,
+              background: "var(--accent)",
+              "--dur": p.dur, "--delay": p.delay,
+              "--tx": p.tx, "--ty": p.ty, "--op": p.op,
+            } as React.CSSProperties}
+          />
+        ))}
         <svg style={{ position: "absolute", left: 0, top: 72, pointerEvents: "none", opacity: 0.5 }} width="400" height="70" viewBox="0 0 536 89" fill="none">
           <path d="M-29 1h353.5L412 88.5h123.5" stroke="url(#tl)" />
           <defs>
@@ -851,13 +1047,13 @@ const KernSite: React.FC = () => {
             {/* Row 1: hero — full width */}
             {workItems.filter((w) => w.layout === "hero").map((w) => (
               <motion.div key={w.title} className="work2-item" variants={{ hidden:{ opacity:0, y:30 }, visible:{ opacity:1, y:0, transition:{ duration:0.7, ease:[0.22,1,0.36,1] } } }}>
-                <div className="work2-card work2-card--hero">
+                <motion.div className="work2-card work2-card--hero" whileHover={{ y: -4 }} transition={{ duration: 0.3, ease: [0.22,1,0.36,1] }}>
                   <div className="work2-media">
                     {w.imgs.map((src, i) => (
                       <img key={i} src={src} alt={w.title} className="work2-img" loading="lazy" />
                     ))}
                   </div>
-                </div>
+                </motion.div>
               <div className="work2-meta">
                 <div className="work2-mcol">
                   <div className="work2-mlabel">Project</div>
@@ -879,13 +1075,13 @@ const KernSite: React.FC = () => {
             {/* Row 2: half cards */}
             {workItems.filter((w) => w.layout === "half").map((w) => (
               <motion.div key={w.title} className="work2-item" variants={{ hidden:{ opacity:0, y:30 }, visible:{ opacity:1, y:0, transition:{ duration:0.7, ease:[0.22,1,0.36,1] } } }}>
-                <div className="work2-card work2-card--half">
+                <motion.div className="work2-card work2-card--half" whileHover={{ y: -4 }} transition={{ duration: 0.3, ease: [0.22,1,0.36,1] }}>
                   <div className="work2-media">
                     {w.imgs.map((src, i) => (
                       <img key={i} src={src} alt={w.title} className="work2-img" loading="lazy" />
                     ))}
                   </div>
-                </div>
+                </motion.div>
               <div className="work2-meta">
                 <div className="work2-mcol">
                   <div className="work2-mlabel">Project</div>
@@ -907,13 +1103,13 @@ const KernSite: React.FC = () => {
             {/* Row 3: wide — full width */}
             {workItems.filter((w) => w.layout === "wide").map((w) => (
               <motion.div key={w.title} className="work2-item" variants={{ hidden:{ opacity:0, y:30 }, visible:{ opacity:1, y:0, transition:{ duration:0.7, ease:[0.22,1,0.36,1] } } }}>
-                <div className="work2-card work2-card--wide">
+                <motion.div className="work2-card work2-card--wide" whileHover={{ y: -4 }} transition={{ duration: 0.3, ease: [0.22,1,0.36,1] }}>
                   <div className="work2-media">
                     {w.imgs.map((src, i) => (
                       <img key={i} src={src} alt={w.title} className="work2-img" loading="lazy" />
                     ))}
                   </div>
-                </div>
+                </motion.div>
               <div className="work2-meta">
                 <div className="work2-mcol">
                   <div className="work2-mlabel">Project</div>
@@ -1392,7 +1588,7 @@ const KernSite: React.FC = () => {
                         <svg viewBox="0 0 24 24" width="10" height="10" stroke="currentColor" fill="none" strokeWidth={1.65} strokeLinecap="round" strokeLinejoin="round">
                           <path d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
                         </svg>
-                        hello@kern.it.com
+                        hi@kern.it.com
                       </a>
                     </div>
 
