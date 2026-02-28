@@ -51,8 +51,6 @@ const KernSite: React.FC = () => {
   const [budgetOpen, setBudgetOpen] = useState(false);
 
   const [hoveredWord, setHoveredWord] = useState<string | null>(null);
-  const [founderHover, setFounderHover] = useState(false);
-  const founderTipRef = React.useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   // Testimonials — handled by Framer Motion whileInView
 
@@ -1063,14 +1061,6 @@ const KernSite: React.FC = () => {
             src={kernfounder}
             alt="Founder"
             style={{ width: 44, height: 44, borderRadius: "10px", objectFit: "cover", boxShadow: "0 2px 10px rgba(0,0,0,.15)", border: "2px solid rgba(255,255,255,.8)", cursor: "pointer" }}
-            onMouseEnter={() => setFounderHover(true)}
-            onMouseLeave={() => setFounderHover(false)}
-            onMouseMove={(e) => {
-              if (founderTipRef.current) {
-                founderTipRef.current.style.left = e.clientX + "px";
-                founderTipRef.current.style.top = e.clientY + "px";
-              }
-            }}
           />
         </motion.div>
 
@@ -1729,20 +1719,6 @@ const KernSite: React.FC = () => {
           </div>
         </div>
       </footer>
-      {/* Founder hover tooltip */}
-      {founderHover && (
-        <div
-          ref={founderTipRef}
-          className="founder-tooltip"
-          style={{ left: 0, top: 0, opacity: 1 }}
-        >
-          <img src={kernfounder} alt="Founder" />
-          <div className="founder-tooltip-name">
-            Gab Enciso
-            <span className="founder-tooltip-role">Designer & Developer</span>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
