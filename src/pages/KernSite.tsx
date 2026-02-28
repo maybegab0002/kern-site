@@ -2,6 +2,7 @@
 // Single-file TSX using the provided v8 design (Inter only)
 
 import React, { useEffect, useMemo, useState } from "react";
+import FloatingLines from "@/components/FloatingLines";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import kadizmockup from "@/assets/kadizmockup.webp";
@@ -15,14 +16,24 @@ const INTER =
 
 type SubmitStatus = "idle" | "success" | "error" | "rate_limited";
 
-type WorkItem = {
-  title: string;
-  period: string;
-  client: string;
-  tools: string;
-  layout: "hero" | "half" | "wide";
-  imgs: string[]; // 1 image (single) or 2 images (duo)
-};
+const FloatingLinesBg = React.memo(() => (
+  <div style={{
+    position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
+    zIndex: 0, pointerEvents: "none", overflow: "hidden",
+    opacity: 0.35, mixBlendMode: "screen" as const,
+  }}>
+    <FloatingLines
+      linesGradient={["#b30000", "#f53232", "#ffffff"]}
+      animationSpeed={1}
+      interactive={false}
+      bendRadius={5}
+      bendStrength={-0.5}
+      mouseDamping={0.05}
+      parallax
+      parallaxStrength={0.2}
+    />
+  </div>
+));
 
 
 const KernSite: React.FC = () => {
@@ -37,26 +48,12 @@ const KernSite: React.FC = () => {
   const [submitStatus, setSubmitStatus] = useState<SubmitStatus>("idle");
   const [lastSubmitTime, setLastSubmitTime] = useState<number>(0);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const [faqRipples, setFaqRipples] = useState<{ id: number; x: number; y: number; row: number }[]>([]);
+  const [budgetOpen, setBudgetOpen] = useState(false);
+
   const [hoveredWord, setHoveredWord] = useState<string | null>(null);
-  const [atBottom, setAtBottom] = useState(false);
   const [founderHover, setFounderHover] = useState(false);
-  const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
-  const [galleryTooltip, setGalleryTooltip] = useState<{ label: string; sub: string } | null>(null);
-  const [galleryCursor, setGalleryCursor] = useState({ x: 0, y: 0 });
+  const founderTipRef = React.useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const onScroll = () => {
-      const scrolled = window.scrollY + window.innerHeight;
-      const total = document.documentElement.scrollHeight;
-      setAtBottom(scrolled >= total - 40);
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
   // Testimonials — handled by Framer Motion whileInView
 
   useEffect(() => {
@@ -70,6 +67,7 @@ const KernSite: React.FC = () => {
     }
     document.body.style.fontFamily = INTER;
     document.body.style.margin = "0";
+    document.body.style.background = "#000";
   }, []);
 
   // (scroll observer removed — Framer Motion handles scroll-triggered animations)
@@ -132,57 +130,24 @@ const KernSite: React.FC = () => {
     []
   );
 
-
-
-  const workItems: WorkItem[] = [
-    {
-      title: "Omniportal",
-      period: "2024–2024",
-      client: "HGC",
-      tools: "React · TypeScript · Tailwind · Supabase · Vite",
-      layout: "hero",
-      imgs: [omniportalogin],
-    },
-    {
-      title: "Spendzy | Financial Tracking App",
-      period: "2023–2024",
-      client: "Personal Startup (Discontinued)",
-      tools: "Flutter · Supabase",
-      layout: "half",
-      imgs: [spendzy],
-    },
-    {
-      title: "Kadiz POS",
-      period: "2024–2025",
-      client: "Kadiz",
-      tools: "React · TypeScript · Tailwind · Supabase · Vite",
-      layout: "wide",
-      imgs: [kadizmockup],
-    },
-  ];
-
   const css = `
     *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
     h1,h2,h3,h4,h5,h6{margin:0;font-weight:inherit;font-size:inherit;font-family:${INTER}}
-    html{scroll-behavior:smooth}
+    html{scroll-behavior:smooth;overflow-x:hidden;width:100%}
+    body{overflow-x:hidden;width:100%;position:relative}
     :root{
-      --bg:#f5f5f5;--white:#fff;--text:#1a1a1a;--muted:rgba(26,26,26,.45);
-      --accent:#272B30;--border:rgba(0,0,0,.07);--border-s:rgba(0,0,0,.12);
-      --pill:#5E5E5E;
+      --bg:#000000;--white:#000000;--text:#f0f0ee;--muted:rgba(232,232,230,.72);
+      --accent:#f04444;--border:rgba(232,232,230,.08);--border-s:rgba(232,232,230,.14);
+      --pill:#1a1d22;
       --rsm:8px;--rmd:11px;--rlg:15px;--rxl:17px;--rf:9999px
     }
-    .K{font-family:${INTER};background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;min-height:100vh;font-size:13px}
+    .K{font-family:${INTER};background:transparent;color:var(--text);-webkit-font-smoothing:antialiased;min-height:100vh;font-size:13px;overflow-x:hidden;width:100%}
     .nav{
       position:fixed;top:0;left:0;right:0;z-index:200;
-      padding:18px 32px 56px;
+      padding:18px 32px;
       display:flex;justify-content:center;
-      background:linear-gradient(to bottom, rgba(245,245,245,.95) 0%, rgba(245,245,245,.7) 55%, transparent 100%);
-      backdrop-filter:blur(6px);
-      -webkit-backdrop-filter:blur(6px);
-      mask-image:linear-gradient(to bottom, black 0%, black 55%, transparent 100%);
-      -webkit-mask-image:linear-gradient(to bottom, black 0%, black 55%, transparent 100%);
+      background:transparent;
       pointer-events:none;
-      border:none;
     }
     .nav-i{pointer-events:all;display:flex;align-items:center;justify-content:space-between;width:100%;max-width:1100px}
     .logo{display:flex;align-items:center;gap:7px;cursor:pointer}
@@ -194,22 +159,71 @@ const KernSite: React.FC = () => {
       display:flex;align-items:center;justify-content:center;
     }
     .logo-mark{font-size:11px;font-weight:700;color:white;font-family:${INTER}}
-    .logo-text{font-size:11px;font-weight:600;color:var(--accent);letter-spacing:.02em;font-family:${INTER}}
-    .pill{display:flex;align-items:center;gap:4px;background:var(--pill);border-radius:var(--rf);padding:8px 22px;box-shadow:0 -1px 0 #535353,0 1px 0 #535353,0 10px 18px -5px rgba(0,0,0,.25);border:.7px solid rgba(255,255,255,.15)}
+    .logo-text{font-size:11px;font-weight:600;color:var(--text);letter-spacing:.02em;font-family:${INTER}}
+    .pill{display:flex;align-items:center;gap:4px;background:rgba(255,255,255,0.08);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:var(--rf);padding:8px 22px;box-shadow:0 1px 0 rgba(255,255,255,.12) inset,0 8px 24px rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.12)}
     .plink{font-size:11px;font-weight:300;color:rgba(255,255,255,.65);background:none;border:none;cursor:pointer;font-family:${INTER};transition:color .2s;padding:4px 10px}
     .plink:hover{color:white}
     .psep{width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.3);flex-shrink:0;margin:0 2px}
-    .cta{display:flex;align-items:center;gap:5px;background:var(--accent);color:white;font-family:${INTER};font-size:11px;font-weight:500;border:none;border-radius:var(--rf);padding:6px 14px;cursor:pointer;transition:all .2s;box-shadow:0 2px 9px rgba(0,0,0,.15)}
-    .cta:hover{background:#3a3a3a;transform:translateY(-1px)}
-    .ndot{width:6px;height:6px;border-radius:50%;background:#82D49F}
-    .ndot-ping{position:absolute;width:6px;height:6px;border-radius:50%;background:#82D49F;opacity:.5;animation:ping 1.5s ease-in-out infinite}
-    @keyframes ping{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.8);opacity:0}}
+    /* ── FREEFORM GRADIENT BUTTONS ── */
+    /* Shared gradient for nav buttons only: 4 radial blobs — deep navy, electric blue, sky blue, near-black */
+    .cta,.cta-inner{
+      --btn-bg:
+        radial-gradient(ellipse 80% 60% at 20% 30%, #7a0a0a 0%, transparent 65%),
+        radial-gradient(ellipse 60% 80% at 80% 20%, #c01818 0%, transparent 60%),
+        radial-gradient(ellipse 70% 50% at 60% 90%, #e8430a 0%, transparent 55%),
+        radial-gradient(ellipse 90% 70% at 10% 80%, #1a0505 0%, transparent 70%),
+        #1c0606;
+      background: var(--btn-bg);
+      background-size: 200% 200%;
+      animation: btn-shift 6s ease infinite alternate;
+    }
 
-    /* Animated rainbow border for CTA */
-    .cta-wrap{position:relative;border-radius:var(--rf);padding:2px;background:linear-gradient(90deg,#ff6b6b,#ffd93d,#6bcb77,#4d96ff,#c77dff,#ff6b6b);background-size:300% 300%;animation:rainbowBorder 3s linear infinite}
-    @keyframes rainbowBorder{0%{background-position:0% 50%}100%{background-position:300% 50%}}
-    .cta-inner{display:flex;align-items:center;gap:5px;background:var(--accent);color:white;font-family:${INTER};font-size:11px;font-weight:500;border:none;border-radius:calc(var(--rf) - 2px);padding:6px 14px;cursor:pointer;transition:all .2s;white-space:nowrap}
-    .cta-inner:hover{background:#3a3a3a}
+    @keyframes btn-shift {
+      0%   { background-position: 0% 0% }
+      33%  { background-position: 80% 20% }
+      66%  { background-position: 30% 90% }
+      100% { background-position: 100% 100% }
+    }
+
+    /* Nav "Open for work" — most prominent, glows harder */
+    .cta{
+      display:inline-flex;align-items:center;gap:5px;
+      color:#fff;font-family:${INTER};font-size:11px;font-weight:600;
+      border:1px solid rgba(220,60,60,.5);border-radius:var(--rf);padding:6px 14px;
+      cursor:pointer;position:relative;overflow:hidden;white-space:nowrap;
+      box-shadow:0 0 20px rgba(180,30,30,.35),0 1px 0 rgba(255,120,80,.18) inset;
+      transition:box-shadow .25s,transform .15s;
+    }
+    .cta:hover{box-shadow:0 0 36px rgba(200,40,40,.55),0 1px 0 rgba(255,120,80,.22) inset;transform:translateY(-1px)}
+    .cta::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 0%,rgba(255,180,100,.12),transparent);pointer-events:none}
+
+    .cta-inner{
+      display:inline-flex;align-items:center;gap:6px;
+      color:#fff;font-family:${INTER};font-size:11px;font-weight:600;
+      border:1px solid rgba(220,60,60,.5);border-radius:var(--rf);padding:7px 16px;
+      cursor:pointer;white-space:nowrap;letter-spacing:.01em;
+      box-shadow:0 0 20px rgba(180,30,30,.35),0 1px 0 rgba(255,120,80,.18) inset;
+      transition:box-shadow .25s,transform .15s;
+    }
+    .cta-inner:hover{box-shadow:0 0 36px rgba(200,40,40,.55),0 1px 0 rgba(255,120,80,.22) inset;transform:translateY(-1px)}
+
+    /* Uniform section buttons — clean dark pill */
+    .bp{
+      display:inline-flex;align-items:center;gap:7px;
+      background:#111111;
+      color:#fff;font-family:${INTER};font-size:11.5px;font-weight:500;
+      border:1px solid rgba(255,255,255,.18);
+      border-radius:var(--rf);padding:9px 20px;
+      cursor:pointer;position:relative;
+      letter-spacing:.01em;
+      box-shadow:0 1px 0 rgba(255,255,255,.06) inset;
+      transition:background .2s,border-color .2s,transform .15s;
+    }
+    .bp:hover{background:#1c1c1c;border-color:rgba(255,255,255,.3);transform:translateY(-1px)}
+    .bp-icon{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+
+    /* ── FLOATING LINES BACKGROUND — handled by FloatingLinesBg memo component ── */
+    .K > *:not(.lines-bg){position:relative;z-index:1}
 
     /* ── NEW MINI ANIMATIONS ── */
 
@@ -227,14 +241,9 @@ const KernSite: React.FC = () => {
       100%{transform:translate(var(--tx,20px),var(--ty,-60px)) scale(.6);opacity:0}
     }
 
-    /* Logo — continuous slow rock */
+    /* Logo — animation removed */
     .logo-box-inner img{
-      animation:logo-rock 4s ease-in-out infinite;
-    }
-    @keyframes logo-rock{
-      0%,100%{transform:rotate(0deg)}
-      25%{transform:rotate(-6deg)}
-      75%{transform:rotate(6deg)}
+      animation:none;
     }
 
     /* Marquee dots — continuous slow pulse */
@@ -268,32 +277,18 @@ const KernSite: React.FC = () => {
     .pst:nth-child(3) .pbig{animation-delay:1s}
     .pst:nth-child(4) .pbig{animation-delay:1.5s}
     @keyframes num-shimmer{
-      0%,100%{color:rgba(0,0,0,.04)}
-      50%{color:rgba(39,43,48,.2)}
+      0%,100%{color:rgba(232,232,230,.04)}
+      50%{color:rgba(232,232,230,.18)}
     }
 
-    /* Work card — periodic shine sweep */
+    /* Work card — shine removed */
     .work2-card{position:relative;overflow:hidden}
-    .work2-card::after{
-      content:'';
-      position:absolute;inset:0;
-      background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.13) 50%,transparent 65%);
-      transform:translateX(-150%);
-      pointer-events:none;
-      animation:card-shine 4s ease-in-out infinite;
-    }
-    .work2-card:nth-child(2)::after{animation-delay:1.3s}
-    .work2-card:nth-child(3)::after{animation-delay:2.6s}
-    @keyframes card-shine{
-      0%,70%,100%{transform:translateX(-150%)}
-      40%{transform:translateX(200%)}
-    }
 
     /* Contact form input — glow ring on focus */
     .cf-input:focus,.cf-textarea:focus,.cf-select:focus{
-      border-color:rgba(39,43,48,.4);
-      background:rgba(39,43,48,.02);
-      box-shadow:0 0 0 3px rgba(39,43,48,.06);
+      border-color:rgba(240,68,68,.4);
+      background:rgba(240,68,68,.04);
+      box-shadow:0 0 0 3px rgba(240,68,68,.08);
     }
 
     /* Kern pcard bar pulse */
@@ -331,8 +326,8 @@ const KernSite: React.FC = () => {
     .gallery-item:nth-child(2){animation-delay:1.3s}
     .gallery-item:nth-child(3){animation-delay:2.6s}
     @keyframes gallery-breathe{
-      0%,100%{box-shadow:0 2px 12px rgba(0,0,0,.07)}
-      50%{box-shadow:0 8px 32px rgba(0,0,0,.14)}
+      0%,100%{box-shadow:0 2px 12px rgba(0,0,0,.3)}
+      50%{box-shadow:0 8px 32px rgba(0,0,0,.6)}
     }
 
     /* Quality cards — continuous gentle float staggered */
@@ -364,37 +359,25 @@ const KernSite: React.FC = () => {
       75%{transform:rotate(8deg) scale(1.05)}
     }
 
-    /* Primary buttons — continuous shimmer pulse */
-    .bp{position:relative;overflow:hidden}
-    .bp::after{
-      content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
-      background:linear-gradient(90deg,transparent 30%,rgba(255,255,255,.1) 50%,transparent 70%);
-      transform:translateX(-150%);
-      animation:btn-shine 2.8s ease-in-out infinite;
-    }
-    @keyframes btn-shine{
-      0%,60%,100%{transform:translateX(-150%)}
-      35%{transform:translateX(200%)}
-    }
 
     /* Status dot glow pulse */
     .ndot{
       animation:dot-shadow-pulse 2s ease-in-out infinite;
     }
     @keyframes dot-shadow-pulse{
-      0%,100%{box-shadow:0 0 0 0 rgba(130,212,159,.0)}
-      50%{box-shadow:0 0 6px 3px rgba(130,212,159,.35)}
+      0%,100%{box-shadow:0 0 0 0 rgba(240,68,68,.0)}
+      50%{box-shadow:0 0 6px 3px rgba(240,68,68,.4)}
     }
 
     /* Founder tooltip */
     .founder-tooltip{
       position:fixed;pointer-events:none;z-index:9999;
       width:160px;border-radius:16px;overflow:hidden;
-      box-shadow:0 16px 48px rgba(0,0,0,.28);
-      border:2px solid rgba(255,255,255,.85);
+      box-shadow:0 16px 48px rgba(0,0,0,.6);
+      border:1px solid rgba(255,255,255,.1);
       transition:opacity .2s,transform .2s;
       transform:translate(18px,-80px);
-      background:#fff;
+      background:#111;
     }
     .founder-tooltip img{width:100%;height:160px;object-fit:cover;display:block}
     .founder-tooltip-name{
@@ -403,15 +386,15 @@ const KernSite: React.FC = () => {
       font-family:${INTER};
       font-size:11px;
       font-weight:600;
-      color:#1a1a1a;
+      color:#e8e8e6;
       letter-spacing:.01em;
-      background:#fff;
+      background:#111;
     }
     .founder-tooltip-role{
       display:block;
       font-size:9.5px;
       font-weight:300;
-      color:rgba(26,26,26,.5);
+      color:rgba(232,232,230,.5);
       margin-top:1px;
     }
 
@@ -431,7 +414,7 @@ const KernSite: React.FC = () => {
     .hero{position:relative;padding:150px 32px 70px;display:flex;flex-direction:column;align-items:center;text-align:center;overflow:visible}
     .bottom-fog{
       position:fixed;bottom:0;left:0;right:0;height:120px;
-      background:linear-gradient(to top, rgba(245,245,245,.85) 0%, rgba(245,245,245,.4) 50%, transparent 100%);
+      background:linear-gradient(to top, rgba(0,0,0,.85) 0%, rgba(0,0,0,.4) 50%, transparent 100%);
       backdrop-filter:blur(4px);
       -webkit-backdrop-filter:blur(4px);
       pointer-events:none;
@@ -451,22 +434,20 @@ const KernSite: React.FC = () => {
     .htag{position:absolute;top:-11px;right:0; background:var(--pill); ...}
     .hdesc{font-size:12px;line-height:1.7;color:var(--muted);max-width:380px;margin:11px auto 0;font-weight:300;font-family:${INTER}}
     .hact{display:flex;align-items:center;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:18px}
-    .bp{display:inline-flex;align-items:center;gap:5px;background:var(--accent);color:white;font-family:${INTER};font-size:11.5px;font-weight:500;border:none;border-radius:var(--rf);padding:7px 18px;cursor:pointer;transition:all .2s;box-shadow:0 3px 10px rgba(0,0,0,.18)}
-    .bp:hover{background:#3a3a3a;transform:translateY(-1px)}
-    .bg{display:inline-flex;align-items:center;gap:5px;background:rgba(201,201,201,.15);color:var(--text);font-family:${INTER};font-size:11.5px;font-weight:500;border:1px solid var(--border-s);border-radius:var(--rf);padding:7px 18px;cursor:pointer;transition:all .2s}
-    .bg:hover{background:rgba(201,201,201,.28)}
-    .bdot{width:5px;height:5px;border-radius:50%;background:#82D49F;flex-shrink:0}
+    .bg{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.05);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:rgba(255,255,255,.65);font-family:${INTER};font-size:11.5px;font-weight:500;border:1px solid rgba(255,255,255,.1);border-radius:var(--rf);padding:9px 22px;cursor:pointer;transition:all .2s}
+    .bg:hover{background:rgba(255,255,255,.09);color:rgba(255,255,255,.9);border-color:rgba(255,255,255,.18)}
+    .bdot{width:5px;height:5px;border-radius:50%;background:#000;flex-shrink:0}
 
-    .mq{overflow:hidden;padding:14px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:white}
-    .mq-outer{display:flex;width:max-content}
+    .mq{overflow:hidden;padding:14px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:transparent;width:100%}
+    .mq-outer{display:flex;width:max-content;will-change:transform}
     .mq-track{display:flex;animation:mqs 30s linear infinite;flex-shrink:0}
     .mq-track:hover{animation-play-state:paused}
     @keyframes mqs{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}
     .mq-item{display:flex;align-items:center;gap:9px;padding:0 20px;white-space:nowrap;font-size:9px;font-weight:500;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);font-family:${INTER}}
     .mq-dot{width:3px;height:3px;border-radius:50%;background:var(--accent);flex-shrink:0}
 
-    .S{padding:52px 32px;position:relative;z-index:1}
-    .I{max-width:860px;margin:0 auto}
+    .S{padding:52px 32px;position:relative;z-index:1;overflow-x:hidden}
+    .I{max-width:860px;margin:0 auto;width:100%}
     .stitle{font-family:${INTER};font-size:clamp(1.35rem,2.6vw,2rem);font-weight:600;letter-spacing:-.025em;line-height:1.15;color:var(--text)}
     .ssub{font-size:12px;color:var(--muted);line-height:1.75;font-weight:300;max-width:280px;font-family:${INTER}}
     .shead{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:26px;gap:1.5rem}
@@ -478,17 +459,19 @@ const KernSite: React.FC = () => {
       gap:10px;
     }
     .stat-card{
-      background:white;
+      background:linear-gradient(145deg, rgba(255,255,255,.07) 0%, rgba(255,255,255,.02) 50%, rgba(255,255,255,.05) 100%);
       border-radius:16px;
       padding:20px 18px 16px;
       display:flex;
       flex-direction:column;
       gap:10px;
       transition:transform .25s,box-shadow .25s;
-      box-shadow:0 1px 8px rgba(0,0,0,.05);
-      border:1px solid var(--border);
+      box-shadow:0 1px 0 rgba(255,255,255,.08) inset, 0 -1px 0 rgba(0,0,0,.5) inset, 0 8px 32px rgba(0,0,0,.4), 0 2px 8px rgba(0,0,0,.3);
+      border:1px solid rgba(255,255,255,.1);
+      position:relative;
     }
-    .stat-card:hover{transform:translateY(-3px);box-shadow:0 10px 28px rgba(0,0,0,.09);border-color:rgba(0,0,0,.1)}
+    .stat-card::before{content:'';position:absolute;inset:0;border-radius:16px;background:linear-gradient(135deg,rgba(255,255,255,.06) 0%,transparent 50%);pointer-events:none}
+    .stat-card:hover{transform:translateY(-3px);box-shadow:0 1px 0 rgba(255,255,255,.1) inset, 0 -1px 0 rgba(0,0,0,.6) inset, 0 20px 48px rgba(0,0,0,.55), 0 4px 12px rgba(0,0,0,.4);border-color:rgba(255,255,255,.15)}
     .stat-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
     .stat-num{
       font-family:${INTER};
@@ -498,7 +481,7 @@ const KernSite: React.FC = () => {
     }
     .stat-icon{
       width:32px;height:32px;border-radius:9px;
-      background:rgba(39,43,48,.06);
+      background:rgba(232,232,230,.07);
       display:flex;align-items:center;justify-content:center;
       flex-shrink:0;
     }
@@ -508,10 +491,10 @@ const KernSite: React.FC = () => {
       font-family:${INTER};
       line-height:1.45;
     }
-    .stat-bar-track{height:2px;background:rgba(0,0,0,.06);border-radius:9px;overflow:hidden;margin-top:auto}
+    .stat-bar-track{height:2px;background:rgba(232,232,230,.08);border-radius:9px;overflow:hidden;margin-top:auto}
     .stat-bar-fill{height:100%;border-radius:9px;background:var(--accent)}
 
-    .badge{display:inline-flex;align-items:center;gap:5px;background:rgba(201,201,201,.15);border-radius:var(--rf);padding:4px 11px;font-size:9.5px;font-weight:400;color:var(--muted);letter-spacing:.02em;border:1px solid var(--border);font-family:${INTER}}
+    .badge{display:inline-flex;align-items:center;gap:5px;background:rgba(232,232,230,.07);border-radius:var(--rf);padding:4px 11px;font-size:9.5px;font-weight:400;color:var(--muted);letter-spacing:.02em;border:1px solid var(--border);font-family:${INTER}}
     .bdg-dot{width:5px;height:5px;border-radius:50%;background:#FF9900;flex-shrink:0}
     .pull-quote{font-size:clamp(.95rem,1.9vw,1.3rem);font-weight:400;line-height:1.55;color:var(--muted);letter-spacing:-.01em;font-family:${INTER};max-width:540px}
     .pull-quote strong{color:var(--text);font-weight:600}
@@ -519,12 +502,12 @@ const KernSite: React.FC = () => {
     .eyebrow-line{flex:1;height:1px;background:var(--border)}
 
     /* PROCESS */
-    .proc{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--border);border-radius:var(--rxl);overflow:hidden;background:white;box-shadow:0 2px 8px rgba(0,0,0,.04)}
-    .pst{padding:18px 15px;border-right:1px solid var(--border);transition:background .2s}
+    .proc{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid rgba(255,255,255,.1);border-radius:var(--rxl);overflow:hidden;background:linear-gradient(145deg,rgba(255,255,255,.06) 0%,rgba(255,255,255,.01) 100%);box-shadow:0 1px 0 rgba(255,255,255,.07) inset,0 8px 32px rgba(0,0,0,.4)}
+    .pst{padding:18px 15px;border-right:1px solid rgba(255,255,255,.06);transition:background .2s;position:relative}
     .pst:last-child{border-right:none}
-    .pst:hover{background:rgba(39,43,48,.02)}
-    .pbig{font-family:${INTER};font-size:3.4rem;font-weight:800;color:rgba(0,0,0,.04);letter-spacing:-.04em;line-height:1;margin-bottom:10px}
-    .plbl{font-size:8px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);opacity:.6;margin-bottom:3px;font-family:${INTER}}
+    .pst:hover{background:rgba(255,255,255,.04)}
+    .pbig{font-family:${INTER};font-size:3.4rem;font-weight:800;color:rgba(232,232,230,.04);letter-spacing:-.04em;line-height:1;margin-bottom:10px}
+    .plbl{font-size:8px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);opacity:.7;margin-bottom:3px;font-family:${INTER}}
     .pttl{font-family:${INTER};font-size:.78rem;font-weight:600;color:var(--text);margin-bottom:5px;line-height:1.3}
     .pdsc{font-size:10.5px;color:var(--muted);line-height:1.65;font-weight:300;font-family:${INTER}}
 
@@ -537,13 +520,11 @@ const KernSite: React.FC = () => {
 
     /* Card — image only */
     .work2-card{
-      background:#e8e8e8;
+      background:#111;
       border-radius:20px;
       overflow:hidden;
-      transition:transform .3s cubic-bezier(.22,1,.36,1),box-shadow .3s;
-      box-shadow:0 4px 20px rgba(0,0,0,.08);
+      box-shadow:0 4px 20px rgba(0,0,0,.4);
     }
-    .work2-card:hover{transform:translateY(-4px);box-shadow:0 20px 50px rgba(0,0,0,.14)}
 
     /* Media — always fills card */
     .work2-media{
@@ -583,7 +564,7 @@ const KernSite: React.FC = () => {
     .work2-mcol+.work2-mcol{border-left:none}
     .work2-mlabel{
       font-size:8px;font-weight:500;letter-spacing:.08em;
-      text-transform:uppercase;color:rgba(26,26,26,.35);
+      text-transform:uppercase;color:rgba(232,232,230,.3);
       font-family:${INTER};margin-bottom:1px;
     }
     .work2-mvalue{
@@ -599,12 +580,12 @@ const KernSite: React.FC = () => {
     .work2-avatars{display:flex;align-items:center;margin-top:3px}
     .work2-av{
       width:26px;height:26px;border-radius:50%;
-      border:2.5px solid var(--bg);
+      border:2.5px solid #000;
       display:flex;align-items:center;justify-content:center;
       font-size:7px;font-weight:700;color:white;
       font-family:${INTER};
       margin-left:-9px;flex-shrink:0;
-      box-shadow:0 1px 4px rgba(0,0,0,.15);
+      box-shadow:0 1px 4px rgba(0,0,0,.3);
     }
     .work2-av:first-child{margin-left:0}
 
@@ -623,13 +604,13 @@ const KernSite: React.FC = () => {
     }
 
     /* SERVICES */
-    .svg2{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--border);border-radius:var(--rxl);overflow:hidden;background:white;box-shadow:0 2px 8px rgba(0,0,0,.04)}
-    .svc{padding:18px 16px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);transition:background .25s;position:relative}
+    .svg2{display:grid;grid-template-columns:repeat(3,1fr);border:none;border-radius:0;overflow:visible;background:transparent;box-shadow:none}
+    .svc{padding:22px 20px;border:none;border-bottom:1px solid rgba(255,255,255,.06);transition:background .25s;position:relative}
     .svc:nth-child(3n){border-right:none}
     .svc:nth-child(4),.svc:nth-child(5),.svc:nth-child(6){border-bottom:none}
-    .svc:hover{background:rgba(39,43,48,.02)}
-    .svc-n{position:absolute;top:14px;right:14px;font-size:8.5px;font-weight:500;letter-spacing:.14em;color:rgba(26,26,26,.18);font-family:${INTER}}
-    .svc-ic{margin-bottom:12px;display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;background:rgba(39,43,48,.06)}
+    .svc:hover{}
+    .svc-n{position:absolute;top:18px;right:18px;font-size:8.5px;font-weight:500;letter-spacing:.14em;color:rgba(232,232,230,.15);font-family:${INTER}}
+    .svc-ic{margin-bottom:14px;display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;background:transparent}
     .svc-ic-01,.svc-ic-02,.svc-ic-03,.svc-ic-04,.svc-ic-05,.svc-ic-06{}
     .svc-t{font-family:${INTER};font-size:.8rem;font-weight:600;color:var(--text);margin-bottom:5px;line-height:1.3}
     .svc-d{font-size:11px;color:var(--muted);line-height:1.7;font-weight:300;font-family:${INTER}}
@@ -645,8 +626,9 @@ const KernSite: React.FC = () => {
     .qhi img{width:100%;height:100%;object-fit:cover}
     .qdesc{font-size:12px;color:var(--muted);line-height:1.75;font-weight:300;max-width:380px;margin:0 auto 26px;font-family:${INTER}}
     .qcards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:760px;margin:0 auto;text-align:left}
-    .qc{background:white;border:1px solid var(--border);border-radius:var(--rmd);padding:14px;transition:all .25s;box-shadow:0 1px 4px rgba(0,0,0,.03)}
-    .qc:hover{box-shadow:0 5px 16px rgba(0,0,0,.07);border-color:rgba(0,0,0,.13)}
+    .qc{background:linear-gradient(145deg,rgba(255,255,255,.07) 0%,rgba(255,255,255,.02) 50%,rgba(255,255,255,.05) 100%);border:1px solid rgba(255,255,255,.1);border-radius:var(--rmd);padding:14px;transition:all .25s;box-shadow:0 1px 0 rgba(255,255,255,.08) inset,0 -1px 0 rgba(0,0,0,.4) inset,0 4px 16px rgba(0,0,0,.3);position:relative;overflow:hidden}
+    .qc::before{content:'';position:absolute;top:0;left:0;right:0;height:50%;background:linear-gradient(to bottom,rgba(255,255,255,.05),transparent);pointer-events:none;border-radius:var(--rmd) var(--rmd) 0 0}
+    .qc:hover{box-shadow:0 1px 0 rgba(255,255,255,.12) inset,0 -1px 0 rgba(0,0,0,.5) inset,0 12px 32px rgba(0,0,0,.45);border-color:rgba(255,255,255,.18);transform:translateY(-2px)}
     .qci{
       margin-bottom:12px;
       width:40px;height:40px;border-radius:11px;
@@ -662,34 +644,152 @@ const KernSite: React.FC = () => {
     .qcd{font-size:10.5px;color:var(--muted);line-height:1.6;font-weight:300;font-family:${INTER}}
 
     /* WHY KERN */
-    .pcard{background:white;border:1px solid var(--border);border-radius:var(--rxl);padding:18px 20px;max-width:420px;margin:0 auto;box-shadow:0 5px 16px rgba(220,220,220,.4)}
+    .why-kern-grid{display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:center}
+    @media(max-width:820px){.why-kern-grid{grid-template-columns:1fr;gap:2rem}}linear-gradient(145deg,rgba(255,255,255,.08) 0%,rgba(255,255,255,.02) 60%,rgba(255,255,255,.06) 100%);border:1px solid rgba(255,255,255,.12);border-radius:var(--rxl);padding:18px 20px;max-width:420px;margin:0 auto;box-shadow:0 1px 0 rgba(255,255,255,.1) inset,0 -1px 0 rgba(0,0,0,.5) inset,0 12px 40px rgba(0,0,0,.45);position:relative;overflow:hidden}
+    .pcard::before{content:'';position:absolute;top:0;left:0;right:0;height:50%;background:linear-gradient(to bottom,rgba(255,255,255,.06),transparent);pointer-events:none}
     .pi{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:var(--rsm);margin-bottom:6px}
     .pbar{width:3px;height:26px;border-radius:9px;flex-shrink:0}
     .pn{font-size:11.5px;font-weight:500;font-family:${INTER}}
     .ps{font-size:10px;opacity:.4;margin-top:1px;font-family:${INTER}}
-    .pbest{display:inline-flex;align-items:center;gap:4px;background:white;border-radius:var(--rf);padding:3px 8px;font-size:9.5px;font-weight:500;color:#22c55e;box-shadow:0 2px 5px rgba(0,0,0,.08);font-family:${INTER}}
-    .pdash{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:var(--rsm);margin-bottom:6px;opacity:.45;border:1.5px dashed rgba(0,0,0,.12)}
+    /* Replace your .pbest rule with this */
+    .pbest{
+      display:inline-flex;align-items:center;gap:4px;
+      background:rgba(240,68,68,.12);
+      border-radius:var(--rf);
+      padding:3px 8px;
+      font-size:9.5px;
+      font-weight:600;
+      color:#f04444;
+      border:1px solid rgba(240,68,68,.35);
+      box-shadow:0 2px 5px rgba(0,0,0,.3);
+      font-family:${INTER};
+    }
+    .pdash{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:var(--rsm);margin-bottom:6px;opacity:.45;border:1.5px dashed rgba(232,232,230,.12)}
 
-    /* FAQ */
-    .faq{border:1px solid var(--border);border-radius:var(--rxl);overflow:hidden;background:white;box-shadow:0 2px 8px rgba(0,0,0,.04)}
-    .fi{border-bottom:1px solid var(--border);position:relative;overflow:hidden}
-    .fi:last-child{border-bottom:none}
-    .faq-ripple{position:absolute;border-radius:50%;background:rgba(39,43,48,.07);transform:scale(0);animation:faq-ripple-anim .65s cubic-bezier(.22,1,.36,1) forwards;pointer-events:none;z-index:0}
-    @keyframes faq-ripple-anim{0%{transform:scale(0);opacity:1}100%{transform:scale(4);opacity:0}}
-    .fb{width:100%;display:flex;align-items:center;justify-content:space-between;gap:1.5rem;padding:13px 18px;background:transparent;border:none;cursor:pointer;text-align:left;font-family:${INTER};transition:background .2s;position:relative;z-index:1}
-    .fb:hover{background:rgba(39,43,48,.02)}
-    .fq{font-family:${INTER};font-size:.8rem;font-weight:500;color:var(--text);line-height:1.4}
-    .ficon{width:22px;height:22px;border-radius:50%;flex-shrink:0;border:1px solid var(--border-s);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px;transition:all .3s;transform-origin:center}
-    .ficon.open{background:var(--accent);border-color:var(--accent);color:white;transform:rotate(45deg)}
-    .fbody{display:grid;grid-template-rows:0fr;transition:grid-template-rows .35s cubic-bezier(.4,0,.2,1);position:relative;z-index:1}
-    .fbody.open{grid-template-rows:1fr}
-    .fbi{overflow:hidden}
-    .fa{padding:0 18px 13px;font-size:11.5px;color:var(--muted);line-height:1.78;font-weight:300;max-width:520px;font-family:${INTER}}
+    /* ── FAQ — chat/messenger style ── */
+    .faq-chat{
+      display:grid;grid-template-columns:1fr 1fr;gap:0;
+      border-radius:var(--rxl);overflow:hidden;
+      border:1px solid rgba(255,255,255,.1);
+      box-shadow:0 1px 0 rgba(255,255,255,.07) inset,0 12px 40px rgba(0,0,0,.45);
+      min-height:400px;
+    }
+
+    /* Left panel — question list */
+    .faq-ql{
+      background:linear-gradient(160deg,rgba(255,255,255,.07) 0%,rgba(255,255,255,.02) 100%);
+      padding:22px 16px;
+      display:flex;flex-direction:column;gap:6px;
+      overflow:hidden;
+      border-right:1px solid rgba(255,255,255,.07);
+    }
+    .faq-ql-label{
+      font-size:8.5px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;
+      color:rgba(255,255,255,.35);font-family:${INTER};
+      padding:0 8px;margin-bottom:6px;
+    }
+    .faq-qbtn{
+      width:100%;background:none;border:none;cursor:pointer;
+      padding:10px 12px;border-radius:10px;
+      text-align:left;font-family:${INTER};
+      font-size:11.5px;font-weight:400;color:rgba(255,255,255,.55);
+      line-height:1.4;
+      transition:background .2s,color .2s,transform .18s;
+      position:relative;display:flex;align-items:center;gap:8px;
+    }
+    .faq-qbtn::before{
+      content:'';flex-shrink:0;
+      width:4px;height:4px;border-radius:50%;
+      background:rgba(255,255,255,.25);
+      transition:background .2s,transform .2s;
+    }
+    .faq-qbtn:hover{
+      background:rgba(255,255,255,.07);
+      color:rgba(255,255,255,.8);
+      transform:translateX(2px);
+    }
+    .faq-qbtn.faq-active{
+      background:rgba(240,68,68,.15);
+      color:white;font-weight:500;
+    }
+    .faq-qbtn.faq-active::before{
+      background:#f04444;
+      transform:scale(1.4);
+      box-shadow:0 0 6px rgba(240,68,68,.5);
+    }
+
+    /* Right panel — answer display */
+    .faq-ar{
+      background:linear-gradient(145deg,rgba(255,255,255,.06) 0%,rgba(255,255,255,.01) 60%,rgba(255,255,255,.04) 100%);
+      padding:28px 28px;
+      display:flex;flex-direction:column;
+      justify-content:center;
+      position:relative;
+      overflow:hidden;
+    }
+    .faq-ar::before{
+      content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+      background:radial-gradient(ellipse at 80% 20%, rgba(240,68,68,.05) 0%, transparent 65%);
+      pointer-events:none;
+    }
+    .faq-num{
+      font-size:5rem;font-weight:800;letter-spacing:-.06em;line-height:1;
+      color:rgba(232,232,230,.04);font-family:${INTER};
+      position:absolute;bottom:16px;right:22px;
+      pointer-events:none;
+      transition:color .3s;
+    }
+    .faq-a-q{
+      font-size:.78rem;font-weight:600;color:var(--text);
+      font-family:${INTER};line-height:1.4;margin-bottom:12px;
+      position:relative;z-index:1;
+    }
+    .faq-a-q::before{
+      content:'"';font-size:1.8rem;line-height:.8;
+      color:rgba(232,232,230,.1);font-weight:800;
+      display:block;margin-bottom:4px;
+      font-family:Georgia,serif;
+    }
+    .faq-a-body{
+      font-size:12px;color:var(--muted);line-height:1.8;font-weight:300;
+      font-family:${INTER};position:relative;z-index:1;
+    }
+    .faq-a-tag{
+      display:inline-flex;align-items:center;gap:4px;
+      margin-top:14px;
+      background:rgba(232,232,230,.04);border-radius:99px;
+      padding:4px 10px;font-size:9.5px;font-weight:500;
+      color:var(--muted);font-family:${INTER};
+      border:1px solid var(--border);
+      position:relative;z-index:1;
+    }
+    .faq-a-dot{width:5px;height:5px;border-radius:50%;background:#f04444}
+    .faq-empty-icon{
+      width:36px;height:36px;border-radius:50%;
+      border:1.5px dashed rgba(232,232,230,.15);
+      display:flex;align-items:center;justify-content:center;
+    }
+    .faq-empty-txt{font-size:10.5px;color:var(--muted);font-family:${INTER}}
+
+    @keyframes faq-answer-in{
+      0%{opacity:0;transform:translateY(10px)}
+      100%{opacity:1;transform:translateY(0)}
+    }
+    .faq-answer-animate{
+      animation:faq-answer-in .35s cubic-bezier(.22,1,.36,1) forwards;
+    }
+
+    @media(max-width:640px){
+      .faq-chat{grid-template-columns:1fr;min-height:auto}
+      .faq-ar{min-height:200px}
+    }
 
     /* CONTACT */
     .contact-wrap{max-width:590px;margin:0 auto}
-    .contact-card{background:white;border:1px solid var(--border);border-radius:var(--rxl);overflow:hidden;box-shadow:0 7px 26px rgba(0,0,0,.06)}
-    .contact-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+    .contact-card{background:linear-gradient(145deg,rgba(255,255,255,.08) 0%,rgba(255,255,255,.02) 60%,rgba(255,255,255,.06) 100%);border:1px solid rgba(255,255,255,.12);border-radius:var(--rxl);overflow:hidden;box-shadow:0 1px 0 rgba(255,255,255,.1) inset,0 -1px 0 rgba(0,0,0,.5) inset,0 16px 48px rgba(0,0,0,.5);position:relative}
+    .contact-card::before{content:'';position:absolute;top:0;left:0;right:0;height:40%;background:linear-gradient(to bottom,rgba(255,255,255,.05),transparent);pointer-events:none;z-index:0}
+    .contact-header,.contact-body,.contact-footer{position:relative;z-index:1}
+    .contact-header{padding:20px 24px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:space-between}
     .contact-header-left{display:flex;flex-direction:column;gap:3px}
     .contact-header-title{font-size:.85rem;font-weight:600;color:var(--text);font-family:${INTER}}
     .contact-header-sub{font-size:10.5px;color:var(--muted);font-weight:300;font-family:${INTER}}
@@ -698,16 +798,43 @@ const KernSite: React.FC = () => {
     .cf-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
     .cf-field{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
     .cf-label{font-size:9px;font-weight:500;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-family:${INTER}}
-    .cf-input,.cf-textarea,.cf-select{width:100%;padding:7px 11px;background:rgba(94,94,94,.04);border:1px solid var(--border);border-radius:var(--rmd);color:var(--text);font-family:${INTER};font-size:11.5px;font-weight:300;outline:none;transition:border-color .2s,background .2s;appearance:none}
+    .cf-input,.cf-textarea,.cf-select{width:100%;padding:7px 11px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:var(--rmd);color:var(--text);font-family:${INTER};font-size:11.5px;font-weight:300;outline:none;transition:border-color .2s,background .2s;appearance:none;box-shadow:0 1px 0 rgba(255,255,255,.06) inset}
     .cf-textarea{resize:vertical;min-height:84px}
     .cf-input::placeholder,.cf-textarea::placeholder{color:var(--muted);opacity:.5}
-    .cf-input:focus,.cf-textarea:focus,.cf-select:focus{border-color:rgba(39,43,48,.3);background:rgba(39,43,48,.02)}
-    .cf-select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23999' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 11px center;padding-right:30px;cursor:pointer}
+    .cf-input:focus,.cf-textarea:focus{border-color:rgba(240,68,68,.4);background:rgba(240,68,68,.04);box-shadow:0 0 0 3px rgba(240,68,68,.08)}
+    /* Custom budget dropdown */
+    .cf-dropdown{position:relative;width:100%}
+    .cf-dropdown-trigger{
+      width:100%;padding:7px 11px;
+      background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);
+      border-radius:var(--rmd);color:var(--text);font-family:${INTER};
+      font-size:11.5px;font-weight:300;outline:none;cursor:pointer;
+      display:flex;align-items:center;justify-content:space-between;
+      transition:border-color .2s,background .2s;
+      box-shadow:0 1px 0 rgba(255,255,255,.06) inset;
+      user-select:none;
+    }
+    .cf-dropdown-trigger.open{border-color:rgba(240,68,68,.4);background:rgba(240,68,68,.04);box-shadow:0 0 0 3px rgba(240,68,68,.08)}
+    .cf-dropdown-trigger svg{flex-shrink:0;transition:transform .2s}
+    .cf-dropdown-trigger.open svg{transform:rotate(180deg)}
+    .cf-dropdown-placeholder{color:rgba(232,232,230,.35)}
+    .cf-dropdown-menu{
+      position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:100;
+      background:#141414;border:1px solid rgba(255,255,255,.12);
+      border-radius:var(--rmd);overflow:hidden;
+      box-shadow:0 8px 32px rgba(0,0,0,.6);
+    }
+    .cf-dropdown-option{
+      padding:8px 11px;font-family:${INTER};font-size:11.5px;font-weight:300;
+      color:rgba(232,232,230,.75);cursor:pointer;transition:background .15s,color .15s;
+    }
+    .cf-dropdown-option:hover{background:rgba(240,68,68,.12);color:#fff}
+    .cf-dropdown-option.selected{background:rgba(240,68,68,.08);color:#fff}
     .cf-checks{display:flex;flex-direction:column;gap:4px}
-    .cf-check-label{display:flex;align-items:center;gap:7px;cursor:pointer;padding:7px 9px;border-radius:var(--rsm);border:1px solid var(--border);transition:background .15s,border-color .15s;font-size:11.5px;color:var(--text);font-family:${INTER}}
-    .cf-check-label:hover{background:rgba(39,43,48,.02);border-color:rgba(39,43,48,.15)}
+    .cf-check-label{display:flex;align-items:center;gap:7px;cursor:pointer;padding:7px 9px;border-radius:var(--rsm);border:1px solid rgba(255,255,255,.08);transition:background .15s,border-color .15s;font-size:11.5px;color:var(--text);font-family:${INTER}}
+    .cf-check-label:hover{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.15)}
     .cf-check-label input{accent-color:var(--accent);width:12px;height:12px;flex-shrink:0}
-    .contact-footer{padding:14px 24px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,.015);flex-wrap:wrap;gap:8px}
+    .contact-footer{padding:14px 24px;border-top:1px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.02);flex-wrap:wrap;gap:8px}
     .cf-note{font-size:10px;color:var(--muted);font-family:${INTER}}
     .cf-emaillink{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;color:var(--muted);text-decoration:none;transition:color .2s;font-family:${INTER};margin-top:9px}
     .cf-emaillink:hover{color:var(--accent)}
@@ -716,19 +843,24 @@ const KernSite: React.FC = () => {
     .fwrn{padding:6px 10px;border-radius:var(--rsm);background:rgba(234,179,8,.06);border:1px solid rgba(234,179,8,.15);font-size:10.5px;color:#ca8a04;margin-top:8px;font-family:${INTER}}
 
     /* FOOTER */
-    .foot{padding:16px 32px;border-top:1px solid var(--border);background:var(--bg);position:relative;z-index:1}
+    .foot{padding:16px 32px;border-top:1px solid var(--border);background:transparent;position:relative;z-index:1}
     .fi2{max-width:860px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:1.5rem;flex-wrap:wrap}
     .flinks{display:flex;align-items:center;gap:15px}
     .flink{font-size:11.5px;color:var(--muted);text-decoration:none;transition:color .2s;font-family:${INTER}}
     .flink:hover{color:var(--text)}
-    .fcopy{font-size:10px;color:rgba(26,26,26,.35);font-family:${INTER}}
+    .fcopy{font-size:10px;color:rgba(232,232,230,.3);font-family:${INTER}}
+
+    /* SCROLLBAR */
+    ::-webkit-scrollbar{width:5px}
+    ::-webkit-scrollbar-track{background:#000}
+    ::-webkit-scrollbar-thumb{background:#f04444;border-radius:999px;box-shadow:0 0 8px rgba(240,68,68,.4)}
+    ::-webkit-scrollbar-thumb:hover{background:#f87171}
+    *{scrollbar-width:thin;scrollbar-color:#f04444 #000}
 
     /* ── GALLERY ── */
     .gallery-section{
       padding:52px 32px;
-      background:var(--bg);
-      border-top:1px solid var(--border);
-      border-bottom:1px solid var(--border);
+      background:transparent;
     }
     .gallery-inner{max-width:860px;margin:0 auto}
     .gallery-shead{text-align:center;margin-bottom:22px}
@@ -743,8 +875,8 @@ const KernSite: React.FC = () => {
       overflow:hidden;
       cursor:pointer;
       aspect-ratio:16/10;
-      background:#e8e8e8;
-      box-shadow:0 2px 12px rgba(0,0,0,.07);
+      background:#111;
+      box-shadow:0 2px 12px rgba(0,0,0,.3);
     }
     .gallery-img{
       width:100%;height:100%;
@@ -767,16 +899,16 @@ const KernSite: React.FC = () => {
       font-size:12px;font-weight:600;color:white;font-family:${INTER};
       display:flex;align-items:center;gap:8px;
     }
-    .gallery-label-dot{width:5px;height:5px;border-radius:50%;background:#82D49F;flex-shrink:0}
+    .gallery-label-dot{width:5px;height:5px;border-radius:50%;background:#f04444;flex-shrink:0}
     .gallery-btn{
       display:inline-flex;align-items:center;gap:5px;
-      background:white;color:var(--accent);
+      background:rgba(0,0,0,.7);color:white;
       font-family:${INTER};font-size:10px;font-weight:600;
-      border:none;border-radius:999px;padding:6px 12px;cursor:pointer;
+      border:1px solid rgba(255,255,255,.15);border-radius:999px;padding:6px 12px;cursor:pointer;
       transition:transform .2s,box-shadow .2s;
       white-space:nowrap;
     }
-    .gallery-btn:hover{transform:scale(1.04);box-shadow:0 4px 14px rgba(0,0,0,.18)}
+    .gallery-btn:hover{transform:scale(1.04);box-shadow:0 4px 14px rgba(0,0,0,.4)}
     @media(max-width:640px){
       .gallery-grid{grid-template-columns:1fr 1fr}
     }
@@ -795,6 +927,8 @@ const KernSite: React.FC = () => {
       .I>div[style*="grid-template-columns: 1fr 1fr"]{grid-template-columns:1fr!important}
     }
     @media(max-width:560px){
+      .nav{padding:14px 16px}
+      .hero-deco-svg{display:none}
       .hero{padding:110px 16px 56px}
       .S,.QS{padding:38px 16px}
       .foot{padding:14px 16px}
@@ -808,6 +942,28 @@ const KernSite: React.FC = () => {
       .shead{flex-direction:column;align-items:flex-start}
       .ht{font-size:1.65rem}
       .contact-header,.contact-body,.contact-footer{padding:14px 16px}
+      .faq-chat{grid-template-columns:1fr}
+      .gallery-grid{grid-template-columns:1fr 1fr}
+    }
+    @media(max-width:425px){
+      .nav{padding:12px 14px}
+      .hero{padding:90px 14px 48px}
+      .S,.QS{padding:32px 14px}
+      .ht{font-size:1.45rem}
+      .hdesc{font-size:11px}
+      .hact{flex-direction:column;align-items:stretch}
+      .hact .bp,.hact .bg{width:100%;justify-content:center}
+      .qcards{grid-template-columns:1fr}
+      .gallery-grid{grid-template-columns:1fr}
+      .stats-new{grid-template-columns:1fr 1fr}
+      .svg2{grid-template-columns:1fr}
+      .proc{grid-template-columns:1fr}
+      .cf-row{grid-template-columns:1fr}
+      .I>div[style*="grid-template-columns: 1fr 1fr"]{grid-template-columns:1fr!important}
+      .faq-chat{grid-template-columns:1fr}
+      .work2-row-duo{grid-template-columns:1fr}
+      .pcard{max-width:100%}
+      .contact-wrap{padding:0 2px}
     }
   `;
 
@@ -815,8 +971,8 @@ const KernSite: React.FC = () => {
     <div className="K" style={{ fontFamily: INTER }}>
       <style>{css}</style>
 
-      {/* Bottom scroll fog overlay */}
-      <div className={`bottom-fog${atBottom ? " hidden" : ""}`} />
+      {/* FLOATING LINES BACKGROUND */}
+      <FloatingLinesBg />
 
       {/* NAV */}
       <nav className="nav">
@@ -824,7 +980,7 @@ const KernSite: React.FC = () => {
           <div className="logo" onClick={() => scrollTo("hero")}>
             <div className="logo-box">
               <div className="logo-box-inner">
-                <img src="/kernlogoblack.png" alt="Kern" style={{ width: 28, height: 28, objectFit: "contain", display: "block" }} />
+                <img src="/kernlogoblack.png" alt="Kern" style={{ width: 28, height: 28, objectFit: "contain", display: "block", filter: "invert(1)" }} />
               </div>
             </div>
             <span className="logo-text">Kern</span>
@@ -851,10 +1007,6 @@ const KernSite: React.FC = () => {
 
           <div className="cta-wrap" onClick={() => scrollTo("contact")}>
             <button className="cta-inner">
-              <span style={{ position: "relative", display: "inline-flex", width: 7, height: 7 }}>
-                <span className="ndot-ping" style={{ position: "absolute" }} />
-                <span className="ndot" style={{ position: "relative" }} />
-              </span>
               Open for work
             </button>
           </div>
@@ -884,7 +1036,7 @@ const KernSite: React.FC = () => {
             } as React.CSSProperties}
           />
         ))}
-        <svg style={{ position: "absolute", left: 0, top: 72, pointerEvents: "none", opacity: 0.5 }} width="400" height="70" viewBox="0 0 536 89" fill="none">
+        <svg style={{ position: "absolute", left: 0, top: 72, pointerEvents: "none", opacity: 0.5 }} className="hero-deco-svg" width="400" height="70" viewBox="0 0 536 89" fill="none">
           <path d="M-29 1h353.5L412 88.5h123.5" stroke="url(#tl)" />
           <defs>
             <linearGradient id="tl" x1="122" y1="44.75" x2="535.5" y2="44.75" gradientUnits="userSpaceOnUse">
@@ -893,7 +1045,7 @@ const KernSite: React.FC = () => {
             </linearGradient>
           </defs>
         </svg>
-        <svg style={{ position: "absolute", right: 0, top: 72, pointerEvents: "none", opacity: 0.5 }} width="400" height="70" viewBox="0 0 536 89" fill="none">
+        <svg style={{ position: "absolute", right: 0, top: 72, pointerEvents: "none", opacity: 0.5 }} className="hero-deco-svg" width="400" height="70" viewBox="0 0 536 89" fill="none">
           <path d="M565 1H211.5L124 88.5H0.5" stroke="url(#tr)" />
           <defs>
             <linearGradient id="tr" x1="414" y1="44.75" x2="0.5" y2="44.75" gradientUnits="userSpaceOnUse">
@@ -913,7 +1065,12 @@ const KernSite: React.FC = () => {
             style={{ width: 44, height: 44, borderRadius: "10px", objectFit: "cover", boxShadow: "0 2px 10px rgba(0,0,0,.15)", border: "2px solid rgba(255,255,255,.8)", cursor: "pointer" }}
             onMouseEnter={() => setFounderHover(true)}
             onMouseLeave={() => setFounderHover(false)}
-            onMouseMove={(e) => setCursorPos({ x: e.clientX, y: e.clientY })}
+            onMouseMove={(e) => {
+              if (founderTipRef.current) {
+                founderTipRef.current.style.left = e.clientX + "px";
+                founderTipRef.current.style.top = e.clientY + "px";
+              }
+            }}
           />
         </motion.div>
 
@@ -931,7 +1088,11 @@ const KernSite: React.FC = () => {
 
         <motion.div className="hact" initial={{ opacity:0, y:14 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.6, delay:0.48, ease:[0.22,1,0.36,1] }}>
           <button className="bp" onClick={() => scrollTo("contact")}>
-            <span className="bdot" />
+            <span className="bp-icon">
+              <svg width="9" height="9" viewBox="0 0 12 12" fill="none" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M6 1v10M1 6h10" />
+              </svg>
+            </span>
             Get a project quote
           </button>
           <button className="bg" onClick={() => scrollTo("work")}>
@@ -965,7 +1126,7 @@ const KernSite: React.FC = () => {
               { img: kadizmockup,    label: "Kadiz POS",    sub: "React · TypeScript · Supabase", route: "/projects/kadiz" },
               { img: omniportalogin, label: "Omniportal",   sub: "React · Tailwind · Supabase",   route: "/projects/Omniportal" },
               { img: spendzy,        label: "Spendzy",      sub: "Flutter · Supabase",             route: "/projects/Spendzy" },
-            ].map(({ img, label, sub, route }) => (
+            ].map(({ img, label, route }) => (
               <motion.div
                 key={label}
                 className="gallery-item"
@@ -974,9 +1135,6 @@ const KernSite: React.FC = () => {
                   visible:{ opacity:1, scale:1, transition:{ duration:0.6, ease:[0.22,1,0.36,1] } },
                 }}
                 onClick={() => navigate(route)}
-                onMouseEnter={() => setGalleryTooltip({ label, sub })}
-                onMouseLeave={() => setGalleryTooltip(null)}
-                onMouseMove={(e) => setGalleryCursor({ x: e.clientX, y: e.clientY })}
               >
                 <img src={img} alt={label} className="gallery-img" loading="lazy" />
 
@@ -987,7 +1145,7 @@ const KernSite: React.FC = () => {
       </section>
 
       {/* PROCESS */}
-      <section className="S" style={{ background: "white", borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)" }}>
+      <section className="S" style={{ background: "transparent", borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)" }}>
         <div className="I">
           <motion.div className="shead" initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true, amount:0.4 }} transition={{ duration:0.65, ease:[0.22,1,0.36,1] }}>
             <div>
@@ -1021,125 +1179,19 @@ const KernSite: React.FC = () => {
 
           <motion.div style={{ display: "flex", justifyContent: "center", marginTop: 22 }} initial={{ opacity:0, y:12 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ duration:0.5, delay:0.3 }}>
             <button className="bp" onClick={() => scrollTo("contact")}>
-              <span className="bdot" />
+              <span className="bp-icon">
+                <svg width="9" height="9" viewBox="0 0 12 12" fill="none" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M2 6h8M6 2l4 4-4 4" />
+                </svg>
+              </span>
               Let's work
             </button>
           </motion.div>
         </div>
       </section>
 
-      {/* WORK */}
-      <section id="work" className="S">
-        <div className="I">
-          <motion.div className="shead" style={{ marginBottom: 22 }} initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true, amount:0.5 }} transition={{ duration:0.65, ease:[0.22,1,0.36,1] }}>
-            <div>
-              <span className="eyebrow" style={{ marginBottom: 7 }}>
-                Our latest Masterpieces
-              </span>
-              <h2 className="stitle">Big work. Clean presentation.</h2>
-            </div>
-            <p className="ssub">
-              Discover the magic we’ve crafted lately — where creativity meets impact.
-            </p>
-          </motion.div>
-
-          <motion.div className="work2-grid" initial="hidden" whileInView="visible" viewport={{ once:true, amount:0.05 }} variants={{ hidden:{}, visible:{ transition:{ staggerChildren:0.15 } } }}>
-            {/* Row 1: hero — full width */}
-            {workItems.filter((w) => w.layout === "hero").map((w) => (
-              <motion.div key={w.title} className="work2-item" variants={{ hidden:{ opacity:0, y:30 }, visible:{ opacity:1, y:0, transition:{ duration:0.7, ease:[0.22,1,0.36,1] } } }}>
-                <motion.div className="work2-card work2-card--hero" whileHover={{ y: -4 }} transition={{ duration: 0.3, ease: [0.22,1,0.36,1] }}>
-                  <div className="work2-media">
-                    {w.imgs.map((src, i) => (
-                      <img key={i} src={src} alt={w.title} className="work2-img" loading="lazy" />
-                    ))}
-                  </div>
-                </motion.div>
-              <div className="work2-meta">
-                <div className="work2-mcol">
-                  <div className="work2-mlabel">Project</div>
-                  <div className="work2-mvalue">{w.title}</div>
-                  <div className="work2-mmuted">{w.period}</div>
-                </div>
-                <div className="work2-mcol">
-                  <div className="work2-mlabel">Client</div>
-                  <div className="work2-mvalue">{w.client}</div>
-                </div>
-                <div className="work2-mcol">
-                  <div className="work2-mlabel">Tools</div>
-                  <div className="work2-mvalue">{w.tools}</div>
-                </div>
-              </div>
-              </motion.div>
-            ))}
-
-            {/* Row 2: half cards */}
-            {workItems.filter((w) => w.layout === "half").map((w) => (
-              <motion.div key={w.title} className="work2-item" variants={{ hidden:{ opacity:0, y:30 }, visible:{ opacity:1, y:0, transition:{ duration:0.7, ease:[0.22,1,0.36,1] } } }}>
-                <motion.div className="work2-card work2-card--half" whileHover={{ y: -4 }} transition={{ duration: 0.3, ease: [0.22,1,0.36,1] }}>
-                  <div className="work2-media">
-                    {w.imgs.map((src, i) => (
-                      <img key={i} src={src} alt={w.title} className="work2-img" loading="lazy" />
-                    ))}
-                  </div>
-                </motion.div>
-              <div className="work2-meta">
-                <div className="work2-mcol">
-                  <div className="work2-mlabel">Project</div>
-                  <div className="work2-mvalue">{w.title}</div>
-                  <div className="work2-mmuted">{w.period}</div>
-                </div>
-                <div className="work2-mcol">
-                  <div className="work2-mlabel">Client</div>
-                  <div className="work2-mvalue">{w.client}</div>
-                </div>
-                <div className="work2-mcol">
-                  <div className="work2-mlabel">Tools</div>
-                  <div className="work2-mvalue">{w.tools}</div>
-                </div>
-              </div>
-              </motion.div>
-            ))}
-
-            {/* Row 3: wide — full width */}
-            {workItems.filter((w) => w.layout === "wide").map((w) => (
-              <motion.div key={w.title} className="work2-item" variants={{ hidden:{ opacity:0, y:30 }, visible:{ opacity:1, y:0, transition:{ duration:0.7, ease:[0.22,1,0.36,1] } } }}>
-                <motion.div className="work2-card work2-card--wide" whileHover={{ y: -4 }} transition={{ duration: 0.3, ease: [0.22,1,0.36,1] }}>
-                  <div className="work2-media">
-                    {w.imgs.map((src, i) => (
-                      <img key={i} src={src} alt={w.title} className="work2-img" loading="lazy" />
-                    ))}
-                  </div>
-                </motion.div>
-              <div className="work2-meta">
-                <div className="work2-mcol">
-                  <div className="work2-mlabel">Project</div>
-                  <div className="work2-mvalue">{w.title}</div>
-                  <div className="work2-mmuted">{w.period}</div>
-                </div>
-                <div className="work2-mcol">
-                  <div className="work2-mlabel">Client</div>
-                  <div className="work2-mvalue">{w.client}</div>
-                </div>
-                <div className="work2-mcol">
-                  <div className="work2-mlabel">Tools</div>
-                  <div className="work2-mvalue">{w.tools}</div>
-                </div>
-              </div>
-              </motion.div>
-            ))}
-          </motion.div>
-
-          <motion.div style={{ display: "flex", justifyContent: "center", marginTop: 36 }} initial={{ opacity:0, y:12 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ duration:0.5, delay:0.2 }}>
-            <button className="bp" onClick={() => scrollTo("contact")}>
-              <span className="bdot" />
-              I want a System like this!
-            </button>
-          </motion.div>
-        </div>
-      </section>
-
       {/* QUALITY */}
-      <div style={{ background: "white", borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)" }}>
+      <div style={{ background: "transparent", borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)" }}>
         <section className="QS">
           <button className="bg" style={{ marginBottom: 14, fontSize: 10.5 }}>
             Quality
@@ -1283,36 +1335,36 @@ const KernSite: React.FC = () => {
                 <span className="svc-n">{num}</span>
                 <span className="svc-ic svc-ic-01">
                   {num === "01" && (
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#272B30" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="3" y="3" width="18" height="18" rx="2" />
                       <path d="M3 9h18M9 21V9" />
                     </svg>
                   )}
                   {num === "02" && (
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#272B30" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                       <circle cx="12" cy="7" r="4" />
                     </svg>
                   )}
                   {num === "03" && (
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#272B30" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="2" y="3" width="20" height="14" rx="2" />
                       <path d="M8 21h8M12 17v4" />
                     </svg>
                   )}
                   {num === "04" && (
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#272B30" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
                     </svg>
                   )}
                   {num === "05" && (
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#272B30" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="5" y="2" width="14" height="20" rx="2" />
                       <line x1="12" y1="18" x2="12.01" y2="18" />
                     </svg>
                   )}
                   {num === "06" && (
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#272B30" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="2" y="4" width="20" height="16" rx="2" />
                       <path d="M8 2v2M16 2v2M2 10h20" />
                     </svg>
@@ -1337,8 +1389,8 @@ const KernSite: React.FC = () => {
       </section>
 
       {/* WHY KERN*/}
-      <section className="S" style={{ background: "white", borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)" }}>
-        <div className="I" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "3rem", alignItems: "center" }}>
+      <section className="S" style={{ background: "transparent", borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)" }}>
+        <div className="I why-kern-grid">
           <motion.div initial={{ opacity:0, x:-30 }} whileInView={{ opacity:1, x:0 }} viewport={{ once:true, amount:0.3 }} transition={{ duration:0.7, ease:[0.22,1,0.36,1] }}>
             <span className="eyebrow" style={{ marginBottom: 7 }}>
               Why Kern
@@ -1352,7 +1404,11 @@ const KernSite: React.FC = () => {
               Your search for the right development team ends here. We build systems that outlast the project and grow with your business — not tools you'll need to replace in two years.
             </p>
             <button className="bp" onClick={() => scrollTo("contact")}>
-              <span className="bdot" />
+              <span className="bp-icon">
+                <svg width="9" height="9" viewBox="0 0 12 12" fill="none" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M2 6h8M6 2l4 4-4 4" />
+                </svg>
+              </span>
               Let's work
             </button>
           </motion.div>
@@ -1360,23 +1416,23 @@ const KernSite: React.FC = () => {
           <motion.div className="pcard" initial={{ opacity:0, x:30 }} whileInView={{ opacity:1, x:0 }} viewport={{ once:true, amount:0.3 }} transition={{ duration:0.7, ease:[0.22,1,0.36,1] }}>
             <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 16 }}>
               <span style={{ fontFamily: INTER, fontSize: ".85rem", fontWeight: 600 }}>Task List</span>
-              <span style={{ fontSize: 10, color: "var(--muted)", background: "rgba(0,0,0,.04)", borderRadius: 99, padding: "2px 7px", fontFamily: INTER }}>
+              <span style={{ fontSize: 10, color: "var(--muted)", background: "rgba(255, 255, 255, 0.04)", borderRadius: 99, padding: "2px 7px", fontFamily: INTER }}>
                 3 Options
               </span>
             </div>
 
-            <div className="pi" style={{ background: "rgba(191,112,20,0.08)" }}>
-              <div className="pbar" style={{ background: "rgb(191,112,20)" }} />
+            <div className="pi" style={{ background: "rgba(255, 0, 0, 0.23)" }}>
+              <div className="pbar" style={{ background: "rgb(255, 255, 255)" }} />
               <div style={{ flex: 1 }}>
-                <div className="pn" style={{ color: "rgb(191,112,20)" }}>
+                <div className="pn" style={{ color: "rgb(255, 255, 255)" }}>
                   Kern
                 </div>
-                <div className="ps" style={{ color: "rgb(191,112,20)" }}>
+                <div className="ps" style={{ color: "rgb(255, 255, 255)" }}>
                   Full custom software studio
                 </div>
               </div>
               <div className="pbest">
-                <svg viewBox="0 0 9 6" width="8" height="6" stroke="#37C390" fill="none" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+                <svg viewBox="0 0 9 6" width="8" height="6" stroke="#FF0000" fill="none" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
                   <path d="M1.38 3.12 3.5 5.25 8 .75" />
                 </svg>
                 Best choice
@@ -1409,67 +1465,66 @@ const KernSite: React.FC = () => {
       {/* FAQ */}
       <section id="faq" className="S">
         <div className="I">
-          <div className="shead">
+          <motion.div className="shead" initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true, amount:0.5 }} transition={{ duration:0.65, ease:[0.22,1,0.36,1] }}>
             <div>
-              <span className="eyebrow" style={{ marginBottom: 7 }}>
-                FAQ
-              </span>
+              <span className="eyebrow" style={{ marginBottom: 7 }}>FAQ</span>
               <h2 className="stitle">Common questions</h2>
             </div>
             <p className="ssub">Everything you need to know before starting a project with Kern. Still curious? Just reach out.</p>
-          </div>
+          </motion.div>
 
-          <motion.div className="faq" initial="hidden" whileInView="visible" viewport={{ once:true, amount:0.1 }} variants={{ hidden:{}, visible:{ transition:{ staggerChildren:0.08 } } }}>
-            {[
-              {
-                q: "What kind of projects do you take on?",
-                a: "Internal tools and business systems are our core specialty — admin panels, dashboards, portals, and custom operations software. We also build landing pages, mobile apps, and desktop applications.",
-              },
-              { q: "How long does a typical project take?", a: "Most projects ship their first version within 4–8 weeks. A focused internal tool may be ready in 3 weeks, while a full-featured platform typically takes 8–12 weeks." },
-              { q: "Do you work with early-stage startups?", a: "Both startups and established businesses. We work with funded startups that need to move fast and with companies replacing legacy systems." },
-              { q: "What does the process look like?", a: "We start with a scoping call, define the system architecture, then move into weekly build-and-review cycles. You'll always know what's being built and why." },
-              { q: "Do you offer support after launch?", a: "80% of our clients stay on for ongoing support post-launch. We offer monthly retainers for continued development, bug fixes, and feature additions." },
-              { q: "How do you handle pricing?", a: "Projects are quoted with a fixed price after scoping — no surprises. Ongoing retainers are billed monthly. We don't do hourly billing." },
-            ].map(({ q, a }, i) => (
-              <motion.div key={i} className="fi" variants={{ hidden:{ opacity:0, y:10 }, visible:{ opacity:1, y:0, transition:{ duration:0.45, ease:[0.22,1,0.36,1] } } }}>
-                {faqRipples.filter(r => r.row === i).map(r => (
-                  <span
-                    key={r.id}
-                    className="faq-ripple"
-                    style={{ left: r.x, top: r.y, width: 120, height: 120, marginLeft: -60, marginTop: -60 }}
-                    onAnimationEnd={() => setFaqRipples(prev => prev.filter(rr => rr.id !== r.id))}
-                  />
-                ))}
-                <button
-                  className="fb"
-                  onClick={(e) => {
-                    setOpenFaq(openFaq === i ? null : i);
-                    const rect = (e.currentTarget.closest('.fi') as HTMLElement)?.getBoundingClientRect();
-                    if (rect) {
-                      const iconEl = e.currentTarget.querySelector('.ficon') as HTMLElement;
-                      const iconRect = iconEl?.getBoundingClientRect();
-                      const x = iconRect ? iconRect.left + iconRect.width / 2 - rect.left : e.clientX - rect.left;
-                      const y = iconRect ? iconRect.top + iconRect.height / 2 - rect.top : e.clientY - rect.top;
-                      setFaqRipples(prev => [...prev, { id: Date.now(), x, y, row: i }]);
-                    }
-                  }}
-                >
-                  <span className="fq">{q}</span>
-                  <span className={`ficon${openFaq === i ? " open" : ""}`}>+</span>
-                </button>
-                <div className={`fbody${openFaq === i ? " open" : ""}`}>
-                  <div className="fbi">
-                    <p className="fa">{a}</p>
+          {(() => {
+            const faqs = [
+              { q: "What kind of projects do you take on?", a: "Internal tools and business systems are our core specialty — admin panels, dashboards, portals, and custom operations software. We also build landing pages, mobile apps, and desktop applications.", tag: "Scope" },
+              { q: "How long does a typical project take?", a: "Most projects ship their first version within 4–8 weeks. A focused internal tool may be ready in 3 weeks, while a full-featured platform typically takes 8–12 weeks.", tag: "Timeline" },
+              { q: "Do you work with early-stage startups?", a: "Both startups and established businesses. We work with funded startups that need to move fast and with companies replacing legacy systems.", tag: "Clients" },
+              { q: "What does the process look like?", a: "We start with a scoping call, define the system architecture, then move into weekly build-and-review cycles. You'll always know what's being built and why.", tag: "Process" },
+              { q: "Do you offer support after launch?", a: "80% of our clients stay on for ongoing support post-launch. We offer monthly retainers for continued development, bug fixes, and feature additions.", tag: "Support" },
+              { q: "How do you handle pricing?", a: "Projects are quoted with a fixed price after scoping — no surprises. Ongoing retainers are billed monthly. We don't do hourly billing.", tag: "Pricing" },
+            ];
+            const active = openFaq ?? 0;
+            return (
+              <motion.div
+                className="faq-chat"
+                initial={{ opacity:0, y:24 }}
+                whileInView={{ opacity:1, y:0 }}
+                viewport={{ once:true, amount:0.2 }}
+                transition={{ duration:0.7, ease:[0.22,1,0.36,1] }}
+              >
+                {/* Left — question list */}
+                <div className="faq-ql">
+                  <div className="faq-ql-label">Questions</div>
+                  {faqs.map(({ q }, i) => (
+                    <button
+                      key={i}
+                      className={`faq-qbtn${active === i ? " faq-active" : ""}`}
+                      onClick={() => setOpenFaq(i)}
+                    >
+                      {q}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Right — answer */}
+                <div className="faq-ar">
+                  <div className="faq-num">{String(active + 1).padStart(2, "0")}</div>
+                  <div key={active} className="faq-answer-animate">
+                    <div className="faq-a-q">{faqs[active].q}</div>
+                    <div className="faq-a-body">{faqs[active].a}</div>
+                    <div className="faq-a-tag">
+                      <span className="faq-a-dot" />
+                      {faqs[active].tag}
+                    </div>
                   </div>
                 </div>
               </motion.div>
-            ))}
-          </motion.div>
+            );
+          })()}
         </div>
       </section>
 
       {/* CONTACT */}
-      <section id="contact" className="S" style={{ background: "white", borderTop: "1px solid var(--border)" }}>
+      <section id="contact" className="S" style={{ background: "transparent", borderTop: "1px solid var(--border)" }}>
         <div className="I">
           <motion.div style={{ textAlign: "center", marginBottom: 28 }} initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true, amount:0.4 }} transition={{ duration:0.65, ease:[0.22,1,0.36,1] }}>
             <div style={{ display: "flex", justifyContent: "center", marginBottom: 9 }}>
@@ -1541,13 +1596,39 @@ const KernSite: React.FC = () => {
                     </div>
                     <div className="cf-field">
                       <label className="cf-label">Estimated Budget</label>
-                      <select className="cf-select" value={formData.budget} onChange={(e) => setFormData({ ...formData, budget: e.target.value })}>
-                        <option value="">Select range...</option>
-                        <option value="<5k">Under $5,000</option>
-                        <option value="5k-15k">$5,000 – $15,000</option>
-                        <option value="15k-50k">$15,000 – $50,000</option>
-                        <option value="50k+">$50,000+</option>
-                      </select>
+                      <div className="cf-dropdown">
+                        <div
+                          className={`cf-dropdown-trigger${budgetOpen ? " open" : ""}`}
+                          onClick={() => setBudgetOpen(o => !o)}
+                        >
+                          {formData.budget ? (
+                            { "<5k": "Under $5,000", "5k-15k": "$5,000 – $15,000", "15k-50k": "$15,000 – $50,000", "50k+": "$50,000+" }[formData.budget]
+                          ) : (
+                            <span className="cf-dropdown-placeholder">Select range...</span>
+                          )}
+                          <svg width="10" height="6" viewBox="0 0 10 6" fill="none">
+                            <path d="M1 1l4 4 4-4" stroke="#999" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        </div>
+                        {budgetOpen && (
+                          <div className="cf-dropdown-menu">
+                            {[
+                              { value: "<5k",    label: "Under $5,000" },
+                              { value: "5k-15k", label: "$5,000 – $15,000" },
+                              { value: "15k-50k",label: "$15,000 – $50,000" },
+                              { value: "50k+",   label: "$50,000+" },
+                            ].map(opt => (
+                              <div
+                                key={opt.value}
+                                className={`cf-dropdown-option${formData.budget === opt.value ? " selected" : ""}`}
+                                onClick={() => { setFormData({ ...formData, budget: opt.value }); setBudgetOpen(false); }}
+                              >
+                                {opt.label}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
 
@@ -1593,7 +1674,11 @@ const KernSite: React.FC = () => {
                     </div>
 
                     <button type="submit" className="bp" disabled={isSubmitting} style={{ opacity: isSubmitting ? 0.6 : 1 }}>
-                      <span className="bdot" />
+                      <span className="bp-icon">
+                        <svg width="9" height="9" viewBox="0 0 12 12" fill="none" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M2 6h8M6 2l4 4-4 4" />
+                        </svg>
+                      </span>
                       {isSubmitting ? "Sending..." : submitStatus === "success" ? "Sent ✓" : "Send message"}
                     </button>
                   </div>
@@ -1612,7 +1697,6 @@ const KernSite: React.FC = () => {
           <div className="flinks">
             {(
               [
-                ["work", "Our work"],
                 ["services", "Services"],
                 ["contact", "Contact Us"],
               ] as const
@@ -1634,7 +1718,7 @@ const KernSite: React.FC = () => {
           <div className="logo" onClick={() => scrollTo("hero")} style={{ cursor: "pointer" }}>
             <div className="logo-box">
               <div className="logo-box-inner">
-                <img src="/kernlogoblack.png" alt="Kern" style={{ width: 28, height: 28, objectFit: "contain", display: "block" }} />
+                <img src="/kernlogoblack.png" alt="Kern" style={{ width: 28, height: 28, objectFit: "contain", display: "block", filter: "invert(1)" }} />
               </div>
             </div>
             <span className="logo-text">Kern</span>
@@ -1648,25 +1732,15 @@ const KernSite: React.FC = () => {
       {/* Founder hover tooltip */}
       {founderHover && (
         <div
+          ref={founderTipRef}
           className="founder-tooltip"
-          style={{ left: cursorPos.x, top: cursorPos.y, opacity: founderHover ? 1 : 0 }}
+          style={{ left: 0, top: 0, opacity: 1 }}
         >
           <img src={kernfounder} alt="Founder" />
           <div className="founder-tooltip-name">
             Gab Enciso
             <span className="founder-tooltip-role">Designer & Developer</span>
           </div>
-        </div>
-      )}
-
-      {/* Gallery cursor tooltip */}
-      {galleryTooltip && (
-        <div
-          className="gallery-cursor-tip"
-          style={{ left: galleryCursor.x, top: galleryCursor.y }}
-        >
-          <div className="gct-label">{galleryTooltip.label}</div>
-          <div className="gct-sub">{galleryTooltip.sub}</div>
         </div>
       )}
     </div>

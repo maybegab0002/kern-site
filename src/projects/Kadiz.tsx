@@ -1,24 +1,40 @@
-import { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import FloatingLines from '@/components/FloatingLines';
 import kadizMockup from '../assets/kadizmockup.webp';
 
 const INTER = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif";
 const ease = [0.22, 1, 0.36, 1] as const;
 
-const projectDetails = {
-  title: 'Kadiz POS',
-  tagline: 'Modern Point of Sale System for Retail Excellence',
-  duration: '4 months',
-  role: 'Full Stack Developer',
-  client: 'Kadiz',
-  year: '2025',
+/* ─── Floating Lines Background (identical to Omniportal) ─── */
+const FloatingLinesBg = React.memo(() => (
+  <div style={{
+    position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+    zIndex: 0, pointerEvents: 'none', overflow: 'hidden',
+    opacity: 0.35, mixBlendMode: 'screen' as const,
+  }}>
+    <FloatingLines
+      linesGradient={['#b30000', '#f53232', '#ffffff']}
+      animationSpeed={1}
+      interactive={false}
+      bendRadius={5}
+      bendStrength={-0.5}
+      mouseDamping={0.05}
+      parallax
+      parallaxStrength={0.2}
+    />
+  </div>
+));
+
+/* ─── Data ─── */
+const data = {
   technologies: ['React', 'TypeScript', 'Vite', 'Tailwind CSS', 'Node.js', 'Express.js', 'Supabase', 'Git'],
   overview: 'Kadiz POS is a modern, cloud-based point of sale system designed for retail businesses. It offers seamless transaction processing, inventory management, and real-time sales analytics — all wrapped in an intuitive interface that works across devices, even offline.',
   challenges: [
-    { title: 'Offline Functionality', description: 'Implemented PWA features with IndexedDB to ensure the system works seamlessly without internet, syncing data automatically when the connection is restored.' },
-    { title: 'Payment Integration', description: 'Integrated multiple payment gateways (Stripe, PayPal) with robust error handling and transaction reconciliation to ensure secure and reliable payment processing.' },
-    { title: 'Real-time Inventory Sync', description: 'Developed real-time inventory synchronization across multiple store locations using Supabase subscriptions, preventing overselling and stock discrepancies.' }
+    { n: '01', title: 'Offline Functionality', desc: 'Implemented PWA features with IndexedDB to ensure the system works seamlessly without internet, syncing data automatically when the connection is restored.' },
+    { n: '02', title: 'Payment Integration', desc: 'Integrated multiple payment gateways (Stripe, PayPal) with robust error handling and transaction reconciliation to ensure secure and reliable payment processing.' },
+    { n: '03', title: 'Real-time Inventory Sync', desc: 'Developed real-time inventory synchronization across multiple store locations using Supabase subscriptions, preventing overselling and stock discrepancies.' },
   ],
   process: [
     { n: '01', label: '1 week', title: 'Research & Analysis', desc: 'Interviewed retail owners, analyzed competitor POS systems, created user stories and defined success KPIs.' },
@@ -27,35 +43,28 @@ const projectDetails = {
     { n: '04', label: '6 weeks', title: 'Frontend Development', desc: 'Responsive React UI, Zustand state management, offline-first Service Workers, barcode scanning, and receipt printing.' },
     { n: '05', label: '3 weeks', title: 'Testing & Launch', desc: 'End-to-end and load testing, beta with 5 pilot stores, production deployment, and training documentation.' },
   ],
-  features: [
-    { title: 'Barcode Scanning', desc: 'Lightning-fast checkout with hardware scanner support.' },
-    { title: 'Offline Mode', desc: 'Full functionality without internet, auto-syncs on reconnect.' },
-    { title: 'Multi-store Inventory', desc: 'Real-time stock tracking across all locations.' },
-    { title: 'Loyalty Program', desc: 'Built-in customer loyalty and rewards integration.' },
-    { title: 'Sales Analytics', desc: 'Detailed reports, trends, and revenue insights.' },
-    { title: 'Receipt Printing', desc: 'Physical and email receipts out of the box.' },
-    { title: 'Employee Management', desc: 'Shift tracking, roles, and permissions per user.' },
-    { title: 'Multi-payment Support', desc: 'Cash, card, Stripe, PayPal, and more.' },
-    { title: 'Returns & Refunds', desc: 'Streamlined return and refund processing.' },
-    { title: 'Product Catalog', desc: 'Full catalog with categories, tags, and variants.' },
-    { title: 'Low Stock Alerts', desc: 'Reorder notifications before you run out.' },
-    { title: 'Tablet-optimized UI', desc: 'Touch-first interface designed for the counter.' },
+  scope: [
+    { n: '01', title: 'Cashier Interface', items: ['Barcode scanning support', 'Fast product search', 'Cart & discount management', 'Multiple payment methods', 'Receipt printing & email'] },
+    { n: '02', title: 'Inventory Management', items: ['Multi-store stock tracking', 'Low stock alerts', 'Reorder notifications', 'Product catalog & variants', 'Real-time sync across locations'] },
+    { n: '03', title: 'Admin Dashboard', items: ['Sales analytics & reports', 'Employee management', 'Shift tracking', 'Revenue insights', 'Customizable KPI dashboard'] },
   ],
+  features: ['Barcode Scanning', 'Offline Mode', 'Multi-store Inventory', 'Loyalty Program', 'Sales Analytics', 'Receipt Printing', 'Employee Management', 'Multi-payment Support', 'Returns & Refunds', 'Product Catalog', 'Low Stock Alerts', 'Tablet-optimized UI'],
   results: [
-    { value: '50%', label: 'Faster checkout', sub: 'Avg. time reduction', bar: 50 },
-    { value: '99.9%', label: 'System uptime', sub: 'With offline fallback', bar: 99 },
-    { value: '5K+', label: 'Daily transactions', sub: 'Across 10 stores', bar: 85 },
-    { value: '98%', label: 'Inventory accuracy', sub: 'After deployment', bar: 98 },
-    { value: '35%', label: 'Higher satisfaction', sub: 'Customer feedback', bar: 35 },
-    { value: '60%', label: 'Less training time', sub: 'For new staff', bar: 60 },
-  ]
+    { value: '50%', label: 'Faster checkout', sub: 'Avg. time reduction' },
+    { value: '99.9%', label: 'System uptime', sub: 'With offline fallback' },
+    { value: '5K+', label: 'Daily transactions', sub: 'Across 10 stores' },
+    { value: '98%', label: 'Inventory accuracy', sub: 'After deployment' },
+    { value: '35%', label: 'Higher satisfaction', sub: 'Customer feedback' },
+    { value: '60%', label: 'Less training time', sub: 'For new staff' },
+  ],
+  faqs: [
+    { q: 'How does the offline mode actually work?', a: 'The app uses a Service Worker to cache the shell and critical assets, and IndexedDB to queue transactions locally. When connectivity returns, a background sync process replays the queue against Supabase in order.', tag: 'Architecture' },
+    { q: 'Why Express.js alongside Supabase?', a: 'Supabase handles the DB and real-time layer, but payment webhook verification and custom business logic (commission splits, tax calculations) needed a thin API layer that\'s easier to secure and test independently.', tag: 'Stack' },
+    { q: 'How did you handle multi-store inventory without conflicts?', a: 'Each store writes to its own partition in Supabase. A central reconciliation function runs on commit and resolves any concurrent stock mutations using optimistic locking with version counters.', tag: 'Engineering' },
+    { q: 'Was this tested with real stores before launch?', a: 'Yes — five pilot stores ran Kadiz POS in parallel with their existing system for 3 weeks. All discrepancies were caught and resolved before the full rollout.', tag: 'Testing' },
+    { q: 'Can I get a similar system built for my business?', a: 'Absolutely. We build custom POS, inventory, and operations systems for retail and hospitality. Reach out and we\'ll scope your project.', tag: 'General' },
+  ],
 };
-
-const scopeCards = [
-  { num: '01', title: 'Cashier Interface', items: ['Barcode scanning support', 'Fast product search', 'Cart & discount management', 'Multiple payment methods', 'Receipt printing & email'] },
-  { num: '02', title: 'Inventory Management', items: ['Multi-store stock tracking', 'Low stock alerts', 'Reorder notifications', 'Product catalog & variants', 'Real-time sync across locations'] },
-  { num: '03', title: 'Admin Dashboard', items: ['Sales analytics & reports', 'Employee management', 'Shift tracking', 'Revenue insights', 'Customizable KPI dashboard'] }
-];
 
 const techLogos: Record<string, string> = {
   React: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg',
@@ -68,307 +77,412 @@ const techLogos: Record<string, string> = {
   Git: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/git/git-original.svg',
 };
 
-const featureIcons = [
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#272B30" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="6" width="22" height="15" rx="2"/><path d="M1 10h22"/><path d="M7 15h.01M11 15h2"/></svg>,
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#272B30" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M1 6l4.5 6L1 18"/><path d="M8 6l4.5 6L8 18"/><path d="M15 6h4a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-4"/></svg>,
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#272B30" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>,
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#272B30" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>,
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#272B30" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>,
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#272B30" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>,
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#272B30" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#272B30" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>,
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#272B30" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>,
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#272B30" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>,
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#272B30" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>,
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#272B30" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>,
-];
+const mqItems = ['React', 'TypeScript', 'Vite', 'Tailwind CSS', 'Node.js', 'Express.js', 'Supabase', 'PWA', 'IndexedDB', 'Stripe', 'PayPal', 'Git'];
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 24 },
+  visible: (i = 0) => ({ opacity: 1, y: 0, transition: { duration: 0.6, delay: i * 0.07, ease } }),
+};
 
 export default function Kadiz() {
   const navigate = useNavigate();
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const faqActive = openFaq ?? 0;
+
+  useEffect(() => {
+    document.body.style.background = '#000';
+    document.body.style.margin = '0';
+    return () => { document.body.style.background = ''; };
+  }, []);
 
   const css = `
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
     *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-    html{scroll-behavior:smooth}
-    body{overflow-x:hidden;-webkit-font-smoothing:antialiased}
+    html{scroll-behavior:smooth;overflow-x:hidden;width:100%}
+    body{overflow-x:hidden;width:100%;position:relative;-webkit-font-smoothing:antialiased}
     :root{
-      --bg:#f5f5f5;--white:#fff;--text:#1a1a1a;--muted:rgba(26,26,26,.45);
-      --accent:#272B30;--border:rgba(0,0,0,.07);--border-s:rgba(0,0,0,.12);
-      --rsm:8px;--rmd:11px;--rlg:15px;--rxl:17px;--rf:9999px
+      --accent:#f04444;--text:#f0f0ee;--muted:rgba(232,232,230,.72);
+      --border:rgba(232,232,230,.08);--border-s:rgba(232,232,230,.14);
+      --rf:9999px;--rsm:8px;--rmd:11px;--rlg:15px;--rxl:17px;
     }
-    .KZ{font-family:${INTER};background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;min-height:100vh;font-size:13px}
+    .KZ{font-family:${INTER};background:transparent;color:var(--text);min-height:100vh;font-size:13px;overflow-x:hidden;width:100%}
+
+    /* SCROLLBAR */
+    ::-webkit-scrollbar{width:3px}
+    ::-webkit-scrollbar-track{background:transparent}
+    ::-webkit-scrollbar-thumb{background:linear-gradient(to bottom,transparent,#f04444 15%,#ff6b6b 40%,#f04444 60%,#991b1b 85%,transparent);border-radius:999px;box-shadow:0 0 6px rgba(240,68,68,.8)}
+    *{scrollbar-width:thin;scrollbar-color:#f04444 transparent}
 
     /* NAV */
-    .kz-nav{position:sticky;top:0;z-index:200;padding:0 32px;height:56px;display:flex;align-items:center;background:rgba(245,245,245,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
-    .kz-nav-i{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:1100px;margin:0 auto}
-    .kz-back{display:inline-flex;align-items:center;gap:6px;font-family:${INTER};font-size:11.5px;font-weight:500;color:var(--muted);background:none;border:none;cursor:pointer;padding:0;transition:color .2s}
+    .kz-nav{
+      position:fixed;top:0;left:0;right:0;z-index:200;
+      padding:18px 32px;
+      display:flex;justify-content:center;
+      background:transparent;pointer-events:none;
+    }
+    .kz-nav-i{pointer-events:all;display:flex;align-items:center;justify-content:space-between;width:100%;max-width:1100px}
+    .kz-back{
+      display:inline-flex;align-items:center;gap:6px;
+      font-family:${INTER};font-size:11px;font-weight:500;
+      color:rgba(255,255,255,.6);background:none;border:none;cursor:pointer;
+      padding:0;transition:color .2s;letter-spacing:.01em;
+    }
     .kz-back:hover{color:var(--text)}
-    .kz-nav-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(201,201,201,.15);border:1px solid var(--border-s);border-radius:var(--rf);padding:4px 11px;font-size:9.5px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-family:${INTER}}
-    .kz-ndot{width:5px;height:5px;border-radius:50%;background:#82D49F;flex-shrink:0}
-
-    /* SECTIONS */
-    .S{padding:52px 32px;position:relative;z-index:1}
-    .S.white{background:var(--white);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
-    .I{max-width:1100px;margin:0 auto}
-    .eyebrow{font-size:9px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);display:block;font-family:${INTER}}
-    .stitle{font-family:${INTER};font-size:clamp(1.35rem,2.6vw,2rem);font-weight:600;letter-spacing:-.025em;line-height:1.15;color:var(--text)}
-    .ssub{font-size:12px;color:var(--muted);line-height:1.75;font-weight:300;max-width:280px;font-family:${INTER}}
-    .shead{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:26px;gap:1.5rem}
-    .section-eyebrow-row{display:flex;align-items:center;gap:10px;margin-bottom:13px}
-    .eyebrow-line{flex:1;height:1px;background:var(--border)}
-
-    /* HERO */
-    .kz-hero{padding:90px 32px 64px;border-bottom:1px solid var(--border);position:relative;overflow:hidden}
-    .kz-hero-inner{max-width:1100px;margin:0 auto}
-    .kz-hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
-    .kz-h1{font-family:${INTER};font-size:clamp(2.8rem,6vw,5rem);font-weight:700;line-height:1.04;letter-spacing:-.04em;color:var(--text);margin-bottom:14px}
-    .kz-tagline{font-size:13px;line-height:1.78;color:var(--muted);font-weight:300;font-family:${INTER};max-width:340px;margin-bottom:28px}
-    .kz-hero-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .kz-pill{
+      display:flex;align-items:center;gap:7px;
+      background:rgba(255,255,255,0.08);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+      border-radius:var(--rf);padding:6px 14px;
+      border:1px solid rgba(255,255,255,.12);
+      box-shadow:0 1px 0 rgba(255,255,255,.12) inset;
+    }
+    .kz-nav-tag{font-size:10px;font-weight:400;letter-spacing:.04em;color:rgba(255,255,255,.5);font-family:${INTER}}
+    .live-dot{
+      width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0;
+      animation:livepulse 2.2s ease-in-out infinite;
+    }
+    @keyframes livepulse{0%,100%{box-shadow:0 0 0 0 rgba(240,68,68,.4)}60%{box-shadow:0 0 0 5px rgba(240,68,68,0)}}
 
     /* BUTTONS */
-    .bp{display:inline-flex;align-items:center;gap:5px;background:var(--accent);color:white;font-family:${INTER};font-size:11.5px;font-weight:500;border:none;border-radius:var(--rf);padding:7px 18px;cursor:pointer;transition:all .2s;box-shadow:0 3px 10px rgba(0,0,0,.18)}
-    .bp:hover{background:#3a3a3a;transform:translateY(-1px)}
-    .bg{display:inline-flex;align-items:center;gap:5px;background:rgba(201,201,201,.15);color:var(--text);font-family:${INTER};font-size:11.5px;font-weight:500;border:1px solid var(--border-s);border-radius:var(--rf);padding:7px 18px;cursor:pointer;transition:all .2s}
-    .bg:hover{background:rgba(201,201,201,.28)}
-    .bdot{width:5px;height:5px;border-radius:50%;background:#82D49F;flex-shrink:0}
+    .kz-btn{
+      display:inline-flex;align-items:center;gap:7px;
+      background:#111;color:#fff;
+      font-family:${INTER};font-size:11.5px;font-weight:500;
+      border:1px solid rgba(255,255,255,.18);border-radius:var(--rf);
+      padding:9px 20px;cursor:pointer;letter-spacing:.01em;
+      box-shadow:0 1px 0 rgba(255,255,255,.06) inset;
+      transition:background .2s,border-color .2s,transform .15s;
+    }
+    .kz-btn:hover{background:#1c1c1c;border-color:rgba(255,255,255,.3);transform:translateY(-1px)}
+    .kz-btn-cta{
+      display:inline-flex;align-items:center;gap:7px;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 30%, #7a0a0a 0%, transparent 65%),
+        radial-gradient(ellipse 60% 80% at 80% 20%, #c01818 0%, transparent 60%),
+        radial-gradient(ellipse 70% 50% at 60% 90%, #e8430a 0%, transparent 55%),
+        radial-gradient(ellipse 90% 70% at 10% 80%, #1a0505 0%, transparent 70%),
+        #1c0606;
+      background-size:200% 200%;
+      animation:btn-shift 6s ease infinite alternate;
+      color:#fff;font-family:${INTER};font-size:11.5px;font-weight:600;
+      border:1px solid rgba(220,60,60,.5);border-radius:var(--rf);
+      padding:9px 22px;cursor:pointer;letter-spacing:.01em;
+      box-shadow:0 0 20px rgba(180,30,30,.35),0 1px 0 rgba(255,120,80,.18) inset;
+      transition:box-shadow .25s,transform .15s;
+    }
+    .kz-btn-cta:hover{box-shadow:0 0 36px rgba(200,40,40,.55);transform:translateY(-1px)}
+    @keyframes btn-shift{
+      0%{background-position:0% 0%}33%{background-position:80% 20%}
+      66%{background-position:30% 90%}100%{background-position:100% 100%}
+    }
 
-    /* META STRIP */
-    .kz-meta-strip{display:flex;flex-wrap:wrap;border:1px solid var(--border);border-radius:var(--rmd);overflow:hidden;background:var(--white);width:fit-content;margin-bottom:16px}
-    .kz-meta-item{padding:12px 18px;border-right:1px solid var(--border)}
-    .kz-meta-item:last-child{border-right:none}
-    .kz-meta-label{font-size:8px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-family:${INTER};margin-bottom:4px}
-    .kz-meta-value{font-size:12px;font-weight:600;color:var(--text);font-family:${INTER}}
+    /* HERO */
+    .kz-hero{min-height:100vh;background:transparent;display:flex;flex-direction:column;position:relative;overflow:hidden}
+    .kz-hero-inner{
+      max-width:1100px;margin:0 auto;width:100%;
+      padding:140px 32px 80px;
+      display:flex;flex-direction:column;justify-content:space-between;
+      flex:1;position:relative;z-index:1;
+    }
+    .kz-eyebrow-row{
+      display:flex;align-items:center;gap:10px;
+      font-size:9px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;
+      color:var(--muted);font-family:${INTER};margin-bottom:40px;
+    }
+    .kz-eline{width:20px;height:1px;background:var(--accent);flex-shrink:0}
+    .kz-h1{
+      font-family:${INTER};font-size:clamp(3.8rem,9vw,9rem);
+      font-weight:800;letter-spacing:-.055em;line-height:.92;
+      color:var(--text);margin-bottom:10px;
+    }
+    .kz-tagline{
+      font-family:${INTER};font-size:clamp(.95rem,2vw,1.7rem);
+      font-weight:300;letter-spacing:-.02em;color:var(--muted);font-style:italic;margin-bottom:52px;
+    }
+    .kz-hero-bottom{display:grid;grid-template-columns:1fr auto;gap:48px;align-items:end}
+    .kz-meta{display:flex;flex-wrap:wrap;gap:28px}
+    .kz-meta-lbl{font-size:8px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-family:${INTER};margin-bottom:4px;opacity:.6}
+    .kz-meta-val{font-size:12.5px;font-weight:500;color:var(--text);font-family:${INTER}}
+    .kz-hero-btns{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 
-    /* MINI STATS */
-    .kz-mini-stats{display:flex;gap:8px}
-    .kz-mini-stat{flex:1;background:var(--white);border:1px solid var(--border);border-radius:var(--rmd);padding:13px 14px}
-    .kz-mini-val{font-family:${INTER};font-size:1.5rem;font-weight:800;letter-spacing:-.04em;color:var(--text);line-height:1}
-    .kz-mini-lbl{font-size:10px;color:var(--muted);font-weight:300;margin-top:3px;font-family:${INTER};line-height:1.4}
+    /* MARQUEE */
+    .kz-mq{overflow:hidden;padding:14px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:transparent;width:100%}
+    .kz-mq-outer{display:flex;width:max-content;will-change:transform}
+    .kz-mq-track{display:flex;animation:mqs 30s linear infinite;flex-shrink:0}
+    @keyframes mqs{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}
+    .kz-mq-item{display:flex;align-items:center;gap:9px;padding:0 20px;white-space:nowrap;font-size:9px;font-weight:500;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);font-family:${INTER}}
+    .kz-mq-dot{width:3px;height:3px;border-radius:50%;background:var(--accent);flex-shrink:0}
 
     /* MOCKUP */
-    .kz-mockup{border-radius:var(--rxl);overflow:hidden;border:1px solid var(--border);box-shadow:0 24px 64px rgba(0,0,0,.08),0 4px 16px rgba(0,0,0,.04)}
-    .kz-mockup img{width:100%;height:auto;display:block}
+    .kz-mockup{padding:48px 32px;background:transparent;position:relative;z-index:1}
+    .kz-mockup-inner{max-width:1100px;margin:0 auto}
+    .kz-mockup-frame{
+      border-radius:18px;overflow:hidden;
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow:0 48px 120px rgba(0,0,0,.7),0 8px 28px rgba(0,0,0,.5);
+    }
+    .kz-mockup-frame img{width:100%;height:auto;display:block}
+
+    /* SECTIONS */
+    .kz-S{padding:64px 32px;position:relative;z-index:1;overflow-x:hidden}
+    .kz-I{max-width:1100px;margin:0 auto;width:100%}
+
+    /* EYEBROW TAG */
+    .kz-etag{display:inline-flex;align-items:center;gap:6px;font-size:9px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-family:${INTER};margin-bottom:10px}
+    .kz-en{color:var(--accent)}
+    .kz-stitle{font-family:${INTER};font-size:clamp(1.5rem,3vw,2.5rem);font-weight:700;letter-spacing:-.04em;line-height:1.08;color:var(--text);margin-bottom:8px}
+    .kz-ssub{font-size:12px;color:var(--muted);line-height:1.75;font-weight:300;max-width:320px;font-family:${INTER};margin-bottom:28px}
+    .kz-shead{margin-bottom:32px}
+
+    /* ghost number */
+    .kz-ghost{font-size:4.5rem;font-weight:900;letter-spacing:-.07em;line-height:1;color:rgba(232,232,230,.18);font-family:${INTER};margin-bottom:2px}
 
     /* OVERVIEW */
-    .kz-overview-grid{display:grid;grid-template-columns:1fr 1.65fr;gap:56px;align-items:start}
-    .kz-overview-body{font-size:12px;line-height:1.82;color:var(--muted);font-weight:300;margin-bottom:24px;font-family:${INTER}}
-    .kz-tech-label{font-size:8px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-family:${INTER};margin-bottom:9px;display:block}
+    .kz-ov-grid{display:grid;grid-template-columns:180px 1fr;gap:56px;align-items:start}
+    .kz-ov-sticky{position:sticky;top:80px}
+    .kz-ov-head{font-family:${INTER};font-size:1.6rem;font-weight:700;letter-spacing:-.04em;line-height:1.1;color:var(--text)}
+    .kz-ov-body{font-size:13px;line-height:1.9;color:var(--muted);font-weight:300;margin-bottom:24px;font-family:${INTER}}
+    .kz-tech-lbl{font-size:8px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-family:${INTER};margin-bottom:9px;display:block;opacity:.7}
     .kz-tech-list{display:flex;flex-wrap:wrap;gap:6px}
-    .kz-tech-pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--text);background:var(--white);border:1px solid var(--border);border-radius:var(--rmd);padding:5px 10px;font-weight:400;font-family:${INTER};transition:border-color .2s,box-shadow .2s}
-    .kz-tech-pill:hover{border-color:var(--border-s);box-shadow:0 2px 8px rgba(0,0,0,.06)}
+    .kz-tech-pill{
+      display:inline-flex;align-items:center;gap:7px;font-size:11px;color:var(--text);
+      background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:var(--rsm);
+      padding:5px 11px;font-weight:400;font-family:${INTER};transition:border-color .18s,background .18s;
+    }
+    .kz-tech-pill:hover{border-color:var(--border-s);background:rgba(255,255,255,.08)}
+    @media(max-width:800px){.kz-ov-grid{grid-template-columns:1fr;gap:20px}.kz-ov-sticky{position:static}}
 
-    /* PROC GRID */
-    .proc{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--border);border-radius:var(--rxl);overflow:hidden;background:var(--white);box-shadow:0 2px 8px rgba(0,0,0,.04)}
-    .proc.cols-5{grid-template-columns:repeat(5,1fr)}
-    .pst{padding:22px 20px;border-right:1px solid var(--border);transition:background .2s}
-    .pst:last-child{border-right:none}
-    .pst:hover{background:rgba(39,43,48,.02)}
-    .pbig{font-family:${INTER};font-size:3.2rem;font-weight:800;color:rgba(0,0,0,.04);letter-spacing:-.04em;line-height:1;margin-bottom:10px}
-    .plbl{font-size:8px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);opacity:.6;margin-bottom:3px;font-family:${INTER}}
-    .pttl{font-family:${INTER};font-size:.8rem;font-weight:600;color:var(--text);margin-bottom:8px;line-height:1.3}
-    .pdsc{font-size:10.5px;color:var(--muted);line-height:1.65;font-weight:300;font-family:${INTER}}
-    .pcheck{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--muted);font-weight:300;font-family:${INTER};margin-bottom:5px;line-height:1.5}
-    .pcheck-dot{width:14px;height:14px;border-radius:50%;background:rgba(39,43,48,.06);border:1px solid var(--border-s);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    /* SCOPE */
+    .kz-scope-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:var(--border);border-radius:var(--rxl);overflow:hidden}
+    .kz-scope-cell{background:rgba(255,255,255,.03);padding:28px 22px;transition:background .2s}
+    .kz-scope-cell:hover{background:rgba(255,255,255,.05)}
+    .kz-scope-title{font-family:${INTER};font-size:.9rem;font-weight:600;color:var(--text);margin-bottom:14px;letter-spacing:-.02em}
+    .kz-scope-item{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted);font-family:${INTER};padding:6px 0;border-bottom:1px solid var(--border);font-weight:300}
+    .kz-scope-item:last-child{border-bottom:none}
+    .kz-sdot{width:3px;height:3px;border-radius:50%;background:var(--accent);flex-shrink:0}
+    @media(max-width:640px){.kz-scope-grid{grid-template-columns:1fr}}
 
     /* CHALLENGES */
-    .kz-chal-list{display:flex;flex-direction:column;gap:1px;background:var(--border);border:1px solid var(--border);border-radius:var(--rxl);overflow:hidden}
-    .kz-chal-row{display:grid;grid-template-columns:220px 1fr;gap:28px;padding:22px 26px;background:var(--white);transition:background .2s;align-items:start}
-    .kz-chal-row:hover{background:rgba(39,43,48,.015)}
-    .kz-chal-num{font-size:9px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-family:${INTER};margin-bottom:5px;display:block}
-    .kz-chal-title{font-family:${INTER};font-size:.8rem;font-weight:600;color:var(--text);line-height:1.3}
-    .kz-chal-desc{font-size:12px;line-height:1.78;color:var(--muted);font-weight:300;font-family:${INTER}}
+    .kz-chal-list{display:flex;flex-direction:column}
+    .kz-chal-row{display:grid;grid-template-columns:56px 1fr 1.7fr;gap:28px;padding:26px 0;border-bottom:1px solid var(--border);align-items:start}
+    .kz-chal-row:first-child{border-top:1px solid var(--border)}
+    .kz-chal-n{font-family:${INTER};font-size:.75rem;font-weight:700;color:var(--accent);letter-spacing:.06em}
+    .kz-chal-title{font-family:${INTER};font-size:.92rem;font-weight:600;color:var(--text);line-height:1.25;letter-spacing:-.025em}
+    .kz-chal-desc{font-size:12px;line-height:1.8;color:var(--muted);font-weight:300;font-family:${INTER}}
+    @media(max-width:640px){
+      .kz-chal-row{grid-template-columns:38px 1fr;gap:10px 14px}
+      .kz-chal-desc{grid-column:1/-1}
+    }
 
-    /* FEATURES — 4-col svc grid */
-    .svg2{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--border);border-radius:var(--rxl);overflow:hidden;background:var(--white);box-shadow:0 2px 8px rgba(0,0,0,.04)}
-    .svc{padding:18px 16px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);transition:background .25s;position:relative}
-    .svc:nth-child(4n){border-right:none}
-    .svc:nth-child(n+9){border-bottom:none}
-    .svc:hover{background:rgba(39,43,48,.02)}
-    .svc-n{position:absolute;top:14px;right:14px;font-size:8.5px;font-weight:500;letter-spacing:.14em;color:rgba(26,26,26,.18);font-family:${INTER}}
-    .svc-ic{margin-bottom:12px;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:9px;background:rgba(39,43,48,.06)}
-    .svc-t{font-family:${INTER};font-size:.78rem;font-weight:600;color:var(--text);margin-bottom:4px;line-height:1.3}
-    .svc-d{font-size:10.5px;color:var(--muted);line-height:1.65;font-weight:300;font-family:${INTER}}
+    /* PROCESS */
+    .kz-proc{display:grid;grid-template-columns:repeat(5,1fr);gap:2px;background:var(--border);border-radius:var(--rxl);overflow:hidden}
+    .kz-pst{background:rgba(255,255,255,.03);padding:24px 20px;transition:background .2s}
+    .kz-pst:hover{background:rgba(255,255,255,.05)}
+    .kz-pbig{font-size:3.8rem;font-weight:900;letter-spacing:-.07em;line-height:1;color:rgba(232,232,230,.1);font-family:${INTER};margin-bottom:8px}
+    .kz-plbl{font-size:8px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);opacity:.7;margin-bottom:4px;font-family:${INTER}}
+    .kz-pttl{font-family:${INTER};font-size:.8rem;font-weight:600;color:var(--text);margin-bottom:6px;line-height:1.3}
+    .kz-pdsc{font-size:10.5px;color:var(--muted);line-height:1.65;font-weight:300;font-family:${INTER}}
+    @media(max-width:900px){.kz-proc{grid-template-columns:repeat(3,1fr)}}
+    @media(max-width:560px){.kz-proc{grid-template-columns:1fr 1fr}}
 
-    /* STAT CARDS */
-    .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-    .stat-card{background:var(--white);border-radius:var(--rlg);padding:20px 18px 16px;display:flex;flex-direction:column;gap:4px;transition:transform .25s,box-shadow .25s;box-shadow:0 1px 8px rgba(0,0,0,.05);border:1px solid var(--border)}
-    .stat-card:hover{transform:translateY(-3px);box-shadow:0 10px 28px rgba(0,0,0,.09);border-color:rgba(0,0,0,.1)}
-    .stat-num{font-family:${INTER};font-size:2.2rem;font-weight:800;letter-spacing:-.04em;line-height:1;color:var(--text)}
-    .stat-label{font-size:11px;font-weight:500;color:var(--text);font-family:${INTER}}
-    .stat-sub{font-size:10px;color:var(--muted);font-weight:300;font-family:${INTER}}
-    .stat-bar-track{height:2px;background:rgba(0,0,0,.06);border-radius:9px;overflow:hidden;margin-top:8px}
-    .stat-bar-fill{height:100%;border-radius:9px;background:var(--accent)}
+    /* FEATURES */
+    .kz-feat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;background:var(--border);border-radius:var(--rxl);overflow:hidden}
+    .kz-feat-item{
+      background:rgba(255,255,255,.03);padding:14px 18px;
+      display:flex;align-items:center;justify-content:space-between;
+      font-size:12px;font-weight:400;color:var(--text);font-family:${INTER};
+      transition:background .2s;
+    }
+    .kz-feat-item:hover{background:rgba(255,255,255,.06)}
+    .kz-fdot{width:4px;height:4px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-right:10px}
+    .kz-fn{font-size:9px;color:rgba(232,232,230,.2);font-weight:500;letter-spacing:.08em;font-family:${INTER}}
+    @media(max-width:700px){.kz-feat-grid{grid-template-columns:1fr 1fr}}
+
+    /* RESULTS */
+    .kz-res-mosaic{display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:auto auto;gap:2px;background:var(--border);border-radius:var(--rxl);overflow:hidden}
+    .kz-res-hero{
+      grid-column:1;grid-row:1/3;
+      background:rgba(240,68,68,.08);padding:32px 28px;
+      display:flex;flex-direction:column;justify-content:space-between;gap:16px;
+      border-right:1px solid var(--border);
+    }
+    .kz-res-hero-ew{font-size:8px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);font-family:${INTER}}
+    .kz-res-hero-val{font-family:${INTER};font-size:4rem;font-weight:900;letter-spacing:-.06em;line-height:1;color:var(--text)}
+    .kz-res-hero-lbl{font-size:14px;font-weight:600;color:var(--text);font-family:${INTER};margin-bottom:2px}
+    .kz-res-hero-sub{font-size:11px;color:var(--muted);font-weight:300;font-family:${INTER}}
+    .kz-res-cell{background:rgba(255,255,255,.03);padding:22px 22px;display:flex;flex-direction:column;gap:4px;transition:background .2s}
+    .kz-res-cell:hover{background:rgba(255,255,255,.06)}
+    .kz-res-val{font-family:${INTER};font-size:1.9rem;font-weight:800;letter-spacing:-.04em;line-height:1;color:var(--text);margin-bottom:2px}
+    .kz-res-lbl{font-size:11px;font-weight:500;color:var(--text);font-family:${INTER}}
+    .kz-res-sub{font-size:10px;color:var(--muted);font-weight:300;font-family:${INTER}}
+    @media(max-width:700px){.kz-res-mosaic{grid-template-columns:1fr 1fr}.kz-res-hero{grid-column:1/-1;grid-row:auto}}
 
     /* FAQ */
-    .faq{border:1px solid var(--border);border-radius:var(--rxl);overflow:hidden;background:var(--white);box-shadow:0 2px 8px rgba(0,0,0,.04)}
-    .fi{border-bottom:1px solid var(--border)}
-    .fi:last-child{border-bottom:none}
-    .fb{width:100%;display:flex;align-items:center;justify-content:space-between;gap:1.5rem;padding:15px 20px;background:transparent;border:none;cursor:pointer;text-align:left;font-family:${INTER};transition:background .2s}
-    .fb:hover{background:rgba(39,43,48,.02)}
-    .fq{font-family:${INTER};font-size:.8rem;font-weight:500;color:var(--text);line-height:1.4}
-    .ficon{width:22px;height:22px;border-radius:50%;flex-shrink:0;border:1px solid var(--border-s);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px;transition:all .3s;transform-origin:center}
-    .ficon.open{background:var(--accent);border-color:var(--accent);color:white;transform:rotate(45deg)}
-    .fbody{display:grid;grid-template-rows:0fr;transition:grid-template-rows .35s cubic-bezier(.4,0,.2,1)}
-    .fbody.open{grid-template-rows:1fr}
-    .fbi{overflow:hidden}
-    .fa{padding:0 20px 15px;font-size:11.5px;color:var(--muted);line-height:1.78;font-weight:300;max-width:520px;font-family:${INTER}}
-
-    /* PULL QUOTE */
-    .pull-quote{font-size:clamp(.95rem,1.9vw,1.3rem);font-weight:400;line-height:1.55;color:var(--muted);letter-spacing:-.01em;font-family:${INTER};max-width:540px}
-    .pull-quote strong{color:var(--text);font-weight:600}
-
-    /* BADGE */
-    .badge{display:inline-flex;align-items:center;gap:5px;background:rgba(201,201,201,.15);border-radius:var(--rf);padding:4px 11px;font-size:9.5px;font-weight:400;color:var(--muted);letter-spacing:.02em;border:1px solid var(--border);font-family:${INTER}}
-    .bdg-dot{width:5px;height:5px;border-radius:50%;background:#FF9900;flex-shrink:0}
-
-    /* CTA + FOOTER */
-    .kz-cta-section{padding:72px 32px;text-align:center;border-top:1px solid var(--border)}
-    .kz-cta-inner{max-width:480px;margin:0 auto}
-    .kz-cta-title{font-family:${INTER};font-size:clamp(1.5rem,3vw,2.2rem);font-weight:600;letter-spacing:-.025em;line-height:1.12;color:var(--text);margin-bottom:10px}
-    .kz-cta-sub{font-size:12px;line-height:1.75;color:var(--muted);font-weight:300;font-family:${INTER};margin-bottom:24px}
-    .kz-cta-actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
-    .foot{padding:16px 32px;border-top:1px solid var(--border);background:var(--bg)}
-    .fi2{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:1.5rem;flex-wrap:wrap}
-    .logo{display:flex;align-items:center;gap:7px;cursor:pointer}
-    .logo-box{width:28px;height:28px;border-radius:7px;background:var(--accent);display:flex;align-items:center;justify-content:center}
-    .logo-text{font-size:11px;font-weight:600;color:var(--accent);letter-spacing:.02em;font-family:${INTER}}
-    .fcopy{font-size:10px;color:rgba(26,26,26,.35);font-family:${INTER}}
-
-    /* RESPONSIVE */
-    @media(max-width:960px){
-      .kz-hero-grid{grid-template-columns:1fr!important;gap:32px!important}
-      .kz-overview-grid{grid-template-columns:1fr!important;gap:28px!important}
-      .proc.cols-5{grid-template-columns:1fr 1fr 1fr}
-      .proc{grid-template-columns:1fr 1fr}
-      .pst:nth-child(2n){border-right:none!important}
-      .svg2{grid-template-columns:1fr 1fr}
-      .svg2 .svc:nth-child(2n){border-right:none!important}
-      .stats-grid{grid-template-columns:1fr 1fr 1fr}
-      .shead{flex-direction:column;align-items:flex-start}
-      .ssub{max-width:100%}
-      .kz-chal-row{grid-template-columns:1fr!important;gap:6px!important;padding:16px 18px!important}
+    .kz-faq{display:grid;grid-template-columns:280px 1fr;gap:2px;background:var(--border);border-radius:var(--rxl);overflow:hidden}
+    .kz-faq-ql{background:rgba(255,255,255,.03);padding:24px 20px;display:flex;flex-direction:column;gap:4px}
+    .kz-faq-ql-lbl{font-size:8px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-family:${INTER};margin-bottom:10px;opacity:.6}
+    .kz-faq-btn{
+      display:block;width:100%;text-align:left;
+      font-family:${INTER};font-size:11px;font-weight:400;color:var(--muted);
+      background:none;border:none;cursor:pointer;padding:9px 12px;border-radius:var(--rsm);
+      transition:background .18s,color .18s;line-height:1.45;
     }
+    .kz-faq-btn:hover{background:rgba(255,255,255,.06);color:var(--text)}
+    .kz-faq-btn.active{background:rgba(240,68,68,.1);color:var(--text);font-weight:500}
+    .kz-faq-ar{background:rgba(255,255,255,.02);padding:32px 28px;position:relative}
+    .kz-faq-num{font-size:5rem;font-weight:900;letter-spacing:-.07em;line-height:1;color:rgba(232,232,230,.07);font-family:${INTER};position:absolute;top:20px;right:24px}
+    .kz-faq-anim{animation:faq-in .3s ease}
+    @keyframes faq-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+    .kz-faq-q{font-family:${INTER};font-size:1rem;font-weight:600;color:var(--text);letter-spacing:-.025em;line-height:1.3;margin-bottom:14px}
+    .kz-faq-a{font-size:12.5px;line-height:1.85;color:var(--muted);font-weight:300;font-family:${INTER};margin-bottom:18px;max-width:480px}
+    .kz-faq-tag{display:inline-flex;align-items:center;gap:6px;font-size:9px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-family:${INTER}}
+    .kz-faq-tdot{width:4px;height:4px;border-radius:50%;background:var(--accent);flex-shrink:0}
+    @media(max-width:640px){.kz-faq{grid-template-columns:1fr}}
+
+    /* CTA */
+    .kz-cta{padding:96px 32px;text-align:center;position:relative;z-index:1}
+    .kz-cta-in{max-width:480px;margin:0 auto}
+    .kz-cta-badge{
+      display:inline-flex;align-items:center;gap:6px;
+      background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);
+      border-radius:var(--rf);padding:5px 14px;
+      font-size:9.5px;font-weight:400;color:var(--muted);letter-spacing:.04em;
+      font-family:${INTER};margin-bottom:20px;
+    }
+    .kz-cta-h{font-family:${INTER};font-size:clamp(1.8rem,4vw,3rem);font-weight:800;letter-spacing:-.05em;line-height:1.08;color:var(--text);margin-bottom:12px}
+    .kz-cta-sub{font-size:12px;line-height:1.75;color:var(--muted);font-weight:300;font-family:${INTER};margin-bottom:28px}
+    .kz-cta-btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+
+    /* FOOTER */
+    .kz-foot{padding:16px 32px;border-top:1px solid var(--border);position:relative;z-index:1}
+    .kz-foot-i{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:1.5rem;flex-wrap:wrap}
+    .kz-logo{display:flex;align-items:center;gap:7px;cursor:pointer}
+    .kz-logo-box{width:28px;height:28px;border-radius:7px;background:rgba(255,255,255,.08);border:1px solid var(--border-s);display:flex;align-items:center;justify-content:center}
+    .kz-logo-text{font-size:11px;font-weight:600;color:rgba(255,255,255,.6);letter-spacing:.02em;font-family:${INTER}}
+    .kz-fcopy{font-size:10px;color:rgba(232,232,230,.25);font-family:${INTER}}
+
     @media(max-width:640px){
-      .S{padding:44px 16px}
-      .kz-hero{padding:68px 16px 48px}
-      .foot,.kz-cta-section{padding-left:16px;padding-right:16px}
-      .kz-nav{padding:0 16px}
-      .proc.cols-5{grid-template-columns:1fr 1fr}
-      .proc{grid-template-columns:1fr}
-      .pst{border-right:none!important;border-bottom:1px solid var(--border)}
-      .pst:last-child{border-bottom:none}
-      .svg2{grid-template-columns:1fr 1fr}
-      .svg2 .svc{border-right:none!important}
-      .stats-grid{grid-template-columns:1fr 1fr}
-      .kz-mini-stats{flex-direction:column}
-      .kz-meta-strip{flex-direction:column;width:100%}
-      .kz-meta-item{border-right:none!important;border-bottom:1px solid var(--border)}
-      .kz-meta-item:last-child{border-bottom:none}
+      .kz-hero-inner{padding:120px 20px 60px}
+      .kz-S{padding:52px 20px}
+      .kz-hero-bottom{grid-template-columns:1fr;gap:24px}
+      .kz-nav{padding:14px 20px}
     }
   `;
 
   return (
     <div className="KZ">
       <style>{css}</style>
+      <FloatingLinesBg />
 
-      {/* ── NAV ── */}
+      {/* NAV */}
       <nav className="kz-nav">
         <div className="kz-nav-i">
           <button className="kz-back" onClick={() => navigate('/')}>
             <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
               <path d="M19 12H5M12 5l-7 7 7 7" />
             </svg>
-            Back to Portfolio
+            Back
           </button>
-          <span className="kz-nav-badge">
-            <span className="kz-ndot" />
-            Case Study
-          </span>
+          <div className="kz-pill">
+            <span className="live-dot" />
+            <span className="kz-nav-tag">Case Study</span>
+          </div>
         </div>
       </nav>
 
-      {/* ── HERO ── */}
+      {/* HERO */}
       <section className="kz-hero">
         <div className="kz-hero-inner">
-          <div className="kz-hero-grid">
-            {/* Left */}
-            <motion.div initial={{ opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease }}>
-              <span className="eyebrow" style={{ marginBottom: 10 }}>{projectDetails.year} · {projectDetails.role}</span>
-              <h1 className="kz-h1">{projectDetails.title}</h1>
-              <p className="kz-tagline">{projectDetails.tagline}</p>
-              <div className="kz-hero-actions">
-                <button className="bp" onClick={() => document.getElementById('overview')?.scrollIntoView({ behavior: 'smooth' })}>
-                  <span className="bdot" />
-                  Read case study
-                </button>
-                <button className="bg" onClick={() => navigate('/')}>← Back to work</button>
-              </div>
-            </motion.div>
+          <motion.div className="kz-eyebrow-row" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease }}>
+            <span className="kz-eline" />
+            <span>2025</span>
+            <span style={{ color: 'rgba(255,255,255,.15)' }}>·</span>
+            <span style={{ color: 'var(--accent)' }}>Kadiz</span>
+            <span style={{ color: 'rgba(255,255,255,.15)' }}>·</span>
+            <span>Full Stack Developer</span>
+          </motion.div>
 
-            {/* Right: meta strip + mini stats */}
-            <motion.div initial={{ opacity: 0, x: 28 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.7, delay: 0.15, ease }}>
-              <div className="kz-meta-strip">
-                {[
-                  { label: 'Client', value: projectDetails.client },
-                  { label: 'Duration', value: projectDetails.duration },
-                  { label: 'Year', value: projectDetails.year },
-                ].map(({ label, value }, i) => (
-                  <div key={i} className="kz-meta-item">
-                    <div className="kz-meta-label">{label}</div>
-                    <div className="kz-meta-value">{value}</div>
-                  </div>
-                ))}
-              </div>
-              <div className="kz-mini-stats">
-                {projectDetails.results.slice(0, 3).map(({ value, label }, i) => (
-                  <div key={i} className="kz-mini-stat">
-                    <div className="kz-mini-val">{value}</div>
-                    <div className="kz-mini-lbl">{label}</div>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
+          <div style={{ overflow: 'hidden', marginBottom: 8 }}>
+            <motion.h1 className="kz-h1" initial={{ y: '105%' }} animate={{ y: 0 }} transition={{ duration: 0.9, ease }}>
+              Kadiz<br />POS
+            </motion.h1>
           </div>
-        </div>
-      </section>
+          <div style={{ overflow: 'hidden', marginBottom: 48 }}>
+            <motion.p className="kz-tagline" initial={{ y: '105%' }} animate={{ y: 0 }} transition={{ duration: 0.9, delay: 0.07, ease }}>
+              Modern Point of Sale System for Retail Excellence
+            </motion.p>
+          </div>
 
-      {/* ── MOCKUP ── */}
-      <section className="S white">
-        <div className="I">
-          <motion.div
-            className="kz-mockup"
-            initial={{ opacity: 0, y: 28 }} whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.2 }} transition={{ duration: 0.8, ease }}
-          >
-            <img src={kadizMockup} alt="Kadiz POS Interface" />
+          <motion.div className="kz-hero-bottom" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.75, delay: 0.28, ease }}>
+            <div className="kz-meta">
+              {[
+                { label: 'Client', val: 'Kadiz' },
+                { label: 'Duration', val: '4 months' },
+                { label: 'Role', val: 'Full Stack Developer' },
+                { label: 'Status', val: 'Live in Production' },
+              ].map(({ label, val }) => (
+                <div key={label}>
+                  <div className="kz-meta-lbl">{label}</div>
+                  <div className="kz-meta-val">{val}</div>
+                </div>
+              ))}
+            </div>
+            <div className="kz-hero-btns">
+              <button className="kz-btn" onClick={() => navigate('/')}>
+                <svg width={9} height={9} viewBox="0 0 12 12" fill="none" stroke="#fff" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M8 2l-6 4 6 4" />
+                </svg>
+                All work
+              </button>
+              <button className="kz-btn-cta" onClick={() => document.getElementById('overview')?.scrollIntoView({ behavior: 'smooth' })}>
+                Read case study
+                <svg width={9} height={9} viewBox="0 0 12 12" fill="none" stroke="#fff" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M2 6h8M6 2l4 4-4 4" />
+                </svg>
+              </button>
+            </div>
           </motion.div>
         </div>
       </section>
 
-      {/* ── OVERVIEW ── */}
-      <section id="overview" className="S">
-        <div className="I">
-          <div className="kz-overview-grid">
-            <motion.div initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, ease }}>
-              <div className="section-eyebrow-row">
-                <span className="eyebrow">Overview</span>
-                <span className="eyebrow-line" />
-              </div>
-              <h2 className="stitle">Project<br />Overview</h2>
+      {/* MARQUEE */}
+      <div className="kz-mq">
+        <div className="kz-mq-outer">
+          {[...mqItems, ...mqItems].map((item, i) => (
+            <div key={i} className="kz-mq-item">
+              <span className="kz-mq-dot" />{item}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* MOCKUP */}
+      <div className="kz-mockup">
+        <div className="kz-mockup-inner">
+          <motion.div className="kz-mockup-frame" initial={{ opacity: 0, y: 36 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.2 }} transition={{ duration: 0.9, ease }}>
+            <img src={kadizMockup} alt="Kadiz POS Interface" />
+          </motion.div>
+        </div>
+      </div>
+
+      {/* OVERVIEW */}
+      <section id="overview" className="kz-S" style={{ borderTop: '1px solid var(--border)' }}>
+        <div className="kz-I">
+          <div className="kz-ov-grid">
+            <motion.div className="kz-ov-sticky" initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.65, ease }}>
+              <div className="kz-ghost">01</div>
+              <div className="kz-ov-head">Project<br />Overview</div>
             </motion.div>
-            <motion.div initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.1, ease }}>
-              <p className="kz-overview-body">{projectDetails.overview}</p>
-              <span className="kz-tech-label">Technologies Used</span>
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.65, delay: 0.1, ease }}>
+              <p className="kz-ov-body">{data.overview}</p>
+              <span className="kz-tech-lbl">Technologies</span>
               <div className="kz-tech-list">
-                {projectDetails.technologies.map((tech, i) => (
-                  <span key={i} className="kz-tech-pill">
-                    {techLogos[tech] && (
-                      <img src={techLogos[tech]} alt={tech} width={13} height={13}
-                        style={{ objectFit: 'contain', filter: tech === 'Express.js' ? 'contrast(0) brightness(0.4)' : undefined }}
+                {data.technologies.map((t) => (
+                  <span key={t} className="kz-tech-pill">
+                    {techLogos[t] && (
+                      <img src={techLogos[t]} alt={t} width={13} height={13}
+                        style={{ objectFit: 'contain', filter: t === 'Express.js' ? 'contrast(0) brightness(3)' : undefined }}
                         loading="lazy" />
                     )}
-                    {tech}
+                    {t}
                   </span>
                 ))}
               </div>
@@ -377,32 +491,21 @@ export default function Kadiz() {
         </div>
       </section>
 
-      {/* ── PROJECT SCOPE (proc-style 3-col) ── */}
-      <section className="S white">
-        <div className="I">
-          <motion.div className="shead" initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.65, ease }}>
-            <div>
-              <span className="eyebrow" style={{ marginBottom: 7 }}>Scope</span>
-              <h2 className="stitle">Three modules.<br />One seamless system.</h2>
-            </div>
-            <p className="ssub">Each module handles a distinct retail workflow, unified through a single Supabase backend.</p>
+      {/* SCOPE */}
+      <section className="kz-S" style={{ borderTop: '1px solid var(--border)' }}>
+        <div className="kz-I">
+          <motion.div className="kz-shead" initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.65, ease }}>
+            <div className="kz-etag"><span className="kz-en">02</span> Scope</div>
+            <div className="kz-stitle">Three modules.<br />One system.</div>
+            <p className="kz-ssub">Each module handles a distinct retail workflow, unified through a single Supabase backend.</p>
           </motion.div>
-
-          <motion.div className="proc" initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.1 } } }}>
-            {scopeCards.map(({ num, title, items }) => (
-              <motion.div key={num} className="pst" variants={{ hidden: { opacity: 0, y: 18 }, visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease } } }}>
-                <div className="pbig">{num}</div>
-                <div className="plbl">{num}</div>
-                <div className="pttl">{title}</div>
-                {items.map((item, j) => (
-                  <div key={j} className="pcheck">
-                    <div className="pcheck-dot">
-                      <svg width={8} height={8} viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
-                    </div>
-                    {item}
-                  </div>
+          <motion.div className="kz-scope-grid" initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.1 }} variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.1 } } }}>
+            {data.scope.map(({ n, title, items }) => (
+              <motion.div key={n} className="kz-scope-cell" variants={fadeUp}>
+                <div className="kz-ghost">{n}</div>
+                <div className="kz-scope-title">{title}</div>
+                {items.map((item) => (
+                  <div key={item} className="kz-scope-item"><span className="kz-sdot" />{item}</div>
                 ))}
               </motion.div>
             ))}
@@ -410,190 +513,154 @@ export default function Kadiz() {
         </div>
       </section>
 
-      {/* ── CHALLENGES ── */}
-      <section className="S">
-        <div className="I">
-          <motion.div style={{ marginBottom: 26 }} initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, ease }}>
-            <div className="section-eyebrow-row">
-              <span className="eyebrow">Challenges</span>
-              <span className="eyebrow-line" />
-            </div>
-            <h2 className="stitle">Key challenges & solutions</h2>
+      {/* CHALLENGES */}
+      <section className="kz-S" style={{ borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}>
+        <div className="kz-I">
+          <motion.div className="kz-shead" initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.65, ease }}>
+            <div className="kz-etag"><span className="kz-en">03</span> Challenges</div>
+            <div className="kz-stitle">Key challenges<br />& solutions</div>
           </motion.div>
-
           <div className="kz-chal-list">
-            {projectDetails.challenges.map((c, i) => (
-              <motion.div
-                key={i} className="kz-chal-row"
-                initial={{ opacity: 0, x: -16 }} whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.1, ease }}
-              >
+            {data.challenges.map(({ n, title, desc }, i) => (
+              <motion.div key={n} className="kz-chal-row" custom={i} variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+                <div className="kz-chal-n">{n}</div>
+                <div className="kz-chal-title">{title}</div>
+                <div className="kz-chal-desc">{desc}</div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* PROCESS */}
+      <section className="kz-S">
+        <div className="kz-I">
+          <motion.div className="kz-shead" initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.65, ease }}>
+            <div className="kz-etag"><span className="kz-en">04</span> Process</div>
+            <div className="kz-stitle">16 weeks,<br />5 phases.</div>
+            <p className="kz-ssub">Iterative build-and-review cycles from research to production launch.</p>
+          </motion.div>
+          <motion.div className="kz-proc" initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.1 }} variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.07 } } }}>
+            {data.process.map(({ n, label, title, desc }) => (
+              <motion.div key={n} className="kz-pst" variants={fadeUp}>
+                <div className="kz-pbig">{n}</div>
+                <div className="kz-plbl">{label}</div>
+                <div className="kz-pttl">{title}</div>
+                <div className="kz-pdsc">{desc}</div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* FEATURES */}
+      <section className="kz-S" style={{ borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}>
+        <div className="kz-I">
+          <motion.div className="kz-shead" initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.65, ease }}>
+            <div className="kz-etag"><span className="kz-en">05</span> Features</div>
+            <div className="kz-stitle">What's inside</div>
+          </motion.div>
+          <motion.div className="kz-feat-grid" initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.1 }} variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.04 } } }}>
+            {data.features.map((f, i) => (
+              <motion.div key={f} className="kz-feat-item" variants={fadeUp}>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <span className="kz-fdot" />{f}
+                </div>
+                <span className="kz-fn">{String(i + 1).padStart(2, '0')}</span>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* RESULTS */}
+      <section className="kz-S">
+        <div className="kz-I">
+          <motion.div className="kz-shead" initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.65, ease }}>
+            <div className="kz-etag"><span className="kz-en">06</span> Results</div>
+            <div className="kz-stitle">Results & Impact</div>
+            <p className="kz-ssub">Measured across 10 stores in the first 30 days after launch.</p>
+          </motion.div>
+          <motion.div className="kz-res-mosaic" initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.15 }} variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.08 } } }}>
+            <motion.div className="kz-res-hero" variants={{ hidden: { opacity: 0, x: -24 }, visible: { opacity: 1, x: 0, transition: { duration: 0.7, ease } } }}>
+              <div className="kz-res-hero-ew">Highlight</div>
+              <div className="kz-res-hero-val">99.9%</div>
+              <div>
+                <div className="kz-res-hero-lbl">System uptime</div>
+                <div className="kz-res-hero-sub">With offline fallback since launch</div>
+              </div>
+            </motion.div>
+            {data.results.filter((_, i) => i !== 1).map(({ value, label, sub }, i) => (
+              <motion.div key={i} className="kz-res-cell" variants={fadeUp}>
+                <div className="kz-res-val">{value}</div>
                 <div>
-                  <span className="kz-chal-num">{String(i + 1).padStart(2, '0')}</span>
-                  <div className="kz-chal-title">{c.title}</div>
+                  <div className="kz-res-lbl">{label}</div>
+                  <div className="kz-res-sub">{sub}</div>
                 </div>
-                <p className="kz-chal-desc">{c.description}</p>
               </motion.div>
             ))}
-          </div>
-
-          <motion.div style={{ marginTop: 32, display: 'flex', flexDirection: 'column' as const, gap: 11, maxWidth: 540 }} initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.65, ease }}>
-            <div className="section-eyebrow-row">
-              <span className="eyebrow">The outcome</span>
-              <span className="eyebrow-line" />
-            </div>
-            <p className="pull-quote">
-              Solving offline-first at the <strong>architecture level</strong> — not as an afterthought — is what made Kadiz POS <strong>reliable enough for production retail</strong>.
-            </p>
           </motion.div>
         </div>
       </section>
 
-      {/* ── DEVELOPMENT PROCESS (proc 5-step) ── */}
-      <section className="S white">
-        <div className="I">
-          <motion.div className="shead" initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.65, ease }}>
-            <div>
-              <span className="eyebrow" style={{ marginBottom: 7 }}>Process</span>
-              <h2 className="stitle">4 months,<br />5 focused phases.</h2>
+      {/* FAQ */}
+      <section className="kz-S" style={{ borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}>
+        <div className="kz-I">
+          <motion.div className="kz-shead" initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.65, ease }}>
+            <div className="kz-etag"><span className="kz-en">07</span> FAQ</div>
+            <div className="kz-stitle">Project questions</div>
+            <p className="kz-ssub">Common questions about the build, stack decisions, and delivery.</p>
+          </motion.div>
+          <motion.div className="kz-faq" initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.2 }} transition={{ duration: 0.7, ease }}>
+            <div className="kz-faq-ql">
+              <div className="kz-faq-ql-lbl">Questions</div>
+              {data.faqs.map(({ q }, i) => (
+                <button key={i} className={`kz-faq-btn${faqActive === i ? ' active' : ''}`} onClick={() => setOpenFaq(i)}>{q}</button>
+              ))}
             </div>
-            <p className="ssub">From user research to beta stores — a structured build with real feedback throughout.</p>
+            <div className="kz-faq-ar">
+              <div className="kz-faq-num">{String(faqActive + 1).padStart(2, '0')}</div>
+              <div key={faqActive} className="kz-faq-anim">
+                <div className="kz-faq-q">{data.faqs[faqActive].q}</div>
+                <div className="kz-faq-a">{data.faqs[faqActive].a}</div>
+                <div className="kz-faq-tag"><span className="kz-faq-tdot" />{data.faqs[faqActive].tag}</div>
+              </div>
+            </div>
           </motion.div>
+        </div>
+      </section>
 
-          <motion.div
-            className="proc cols-5"
-            initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.1 }}
-            variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.1 } } }}
-          >
-            {projectDetails.process.map(({ n, label, title, desc }) => (
-              <motion.div key={n} className="pst" variants={{ hidden: { opacity: 0, y: 18 }, visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease } } }}>
-                <div className="pbig">{n}</div>
-                <div className="plbl">{label}</div>
-                <div className="pttl">{title}</div>
-                <div className="pdsc">{desc}</div>
-              </motion.div>
-            ))}
-          </motion.div>
-
-          <motion.div style={{ display: 'flex', justifyContent: 'center', marginTop: 22 }} initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.3 }}>
-            <button className="bp" onClick={() => navigate('/#contact')}>
-              <span className="bdot" />
-              Start your project
+      {/* CTA */}
+      <section className="kz-cta">
+        <motion.div className="kz-cta-in" initial={{ opacity: 0, y: 28 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.4 }} transition={{ duration: 0.75, ease }}>
+          <div className="kz-cta-badge">
+            <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--accent)', display: 'inline-block' }} />
+            Open for new projects
+          </div>
+          <h2 className="kz-cta-h">Have a project<br />in mind?</h2>
+          <p className="kz-cta-sub">Let's build something great together — from internal tools to full-scale platforms.</p>
+          <div className="kz-cta-btns">
+            <button className="kz-btn-cta" onClick={() => navigate('/#contact')}>
+              Start a conversation
+              <svg width={9} height={9} viewBox="0 0 12 12" fill="none" stroke="#fff" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M2 6h8M6 2l4 4-4 4" />
+              </svg>
             </button>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ── KEY FEATURES (svc 4-col grid) ── */}
-      <section className="S">
-        <div className="I">
-          <motion.div style={{ marginBottom: 26 }} initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, ease }}>
-            <div className="section-eyebrow-row">
-              <span className="eyebrow">Features</span>
-              <span className="eyebrow-line" />
-            </div>
-            <h2 className="stitle">What's inside</h2>
-          </motion.div>
-
-          <motion.div className="svg2" initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.05 }} variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.05 } } }}>
-            {projectDetails.features.map(({ title, desc }, i) => (
-              <motion.div key={i} className="svc" variants={{ hidden: { opacity: 0, y: 14 }, visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease } } }}>
-                <span className="svc-n">{String(i + 1).padStart(2, '0')}</span>
-                <span className="svc-ic">{featureIcons[i % featureIcons.length]}</span>
-                <div className="svc-t">{title}</div>
-                <div className="svc-d">{desc}</div>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ── RESULTS (stat cards 3-col) ── */}
-      <section className="S white">
-        <div className="I">
-          <motion.div className="shead" initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.65, ease }}>
-            <div>
-              <span className="eyebrow" style={{ marginBottom: 7 }}>Results</span>
-              <h2 className="stitle">Results & Impact</h2>
-            </div>
-            <p className="ssub">Measured across 10 stores in the first 30 days after launch.</p>
-          </motion.div>
-
-          <motion.div className="stats-grid" initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.1 }} variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.08 } } }}>
-            {projectDetails.results.map(({ value, label, sub, bar }, i) => (
-              <motion.div key={i} className="stat-card" variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease } } }}>
-                <div className="stat-num">{value}</div>
-                <div className="stat-label">{label}</div>
-                <div className="stat-sub">{sub}</div>
-                <div className="stat-bar-track">
-                  <div className="stat-bar-fill" style={{ width: `${bar}%` }} />
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ── FAQ ── */}
-      <section className="S">
-        <div className="I">
-          <div className="shead">
-            <div>
-              <span className="eyebrow" style={{ marginBottom: 7 }}>FAQ</span>
-              <h2 className="stitle">Project questions</h2>
-            </div>
-            <p className="ssub">Common questions about the Kadiz POS build, stack decisions, and delivery.</p>
+            <button className="kz-btn" onClick={() => navigate('/')}>View all work</button>
           </div>
-
-          <motion.div className="faq" initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.1 }} variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.08 } } }}>
-            {[
-              { q: 'How does the offline mode actually work?', a: 'The app uses a Service Worker to cache the shell and critical assets, and IndexedDB to queue transactions locally. When connectivity returns, a background sync process replays the queue against Supabase in order.' },
-              { q: 'Why Express.js alongside Supabase?', a: 'Supabase handles the DB and real-time layer, but payment webhook verification and custom business logic (commission splits, tax calculations) needed a thin API layer that\'s easier to secure and test independently.' },
-              { q: 'How did you handle multi-store inventory without conflicts?', a: 'Each store writes to its own partition in Supabase. A central reconciliation function runs on commit and resolves any concurrent stock mutations using optimistic locking with version counters.' },
-              { q: 'Was this tested with real stores before launch?', a: 'Yes — five pilot stores ran Kadiz POS in parallel with their existing system for 3 weeks. All discrepancies were caught and resolved before the full rollout.' },
-              { q: 'Can I get a similar system built for my business?', a: 'Absolutely. We build custom POS, inventory, and operations systems for retail and hospitality. Reach out and we\'ll scope your project.' },
-            ].map(({ q, a }, i) => (
-              <motion.div key={i} className="fi" variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease } } }}>
-                <button className="fb" onClick={() => setOpenFaq(openFaq === i ? null : i)}>
-                  <span className="fq">{q}</span>
-                  <span className={`ficon${openFaq === i ? ' open' : ''}`}>+</span>
-                </button>
-                <div className={`fbody${openFaq === i ? ' open' : ''}`}>
-                  <div className="fbi"><p className="fa">{a}</p></div>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
+        </motion.div>
       </section>
 
-      {/* ── FOOTER CTA ── */}
-      <section className="kz-cta-section">
-        <div className="kz-cta-inner">
-          <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.3 }} transition={{ duration: 0.65, ease }}>
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
-              <div className="badge"><span className="bdg-dot" />Open for new projects</div>
+      {/* FOOTER */}
+      <footer className="kz-foot">
+        <div className="kz-foot-i">
+          <div className="kz-logo" onClick={() => navigate('/')}>
+            <div className="kz-logo-box">
+              <img src="/kernlogoblack.png" alt="Kern" style={{ width: 15, height: 15, objectFit: 'contain', filter: 'invert(1) opacity(0.7)' }} />
             </div>
-            <h2 className="kz-cta-title">Have a project<br />in mind?</h2>
-            <p className="kz-cta-sub">Let's discuss how we can build something great together — from internal tools to full-scale platforms.</p>
-            <div className="kz-cta-actions">
-              <button className="bp" onClick={() => navigate('/#contact')}><span className="bdot" />Start a conversation</button>
-              <button className="bg" onClick={() => navigate('/')}>View all work →</button>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ── FOOTER ── */}
-      <footer className="foot">
-        <div className="fi2">
-          <div className="logo" onClick={() => navigate('/')}>
-            <div className="logo-box">
-              <img src="/kernlogoblack.png" alt="Kern" style={{ width: 18, height: 18, objectFit: 'contain', filter: 'invert(1)' }} />
-            </div>
-            <span className="logo-text">Kern</span>
+            <span className="kz-logo-text">Kern</span>
           </div>
-          <span className="fcopy">
+          <span className="kz-fcopy">
             <span style={{ color: 'var(--text)' }}>Kern</span> is a registered trademark © All rights reserved {new Date().getFullYear()}
           </span>
         </div>
