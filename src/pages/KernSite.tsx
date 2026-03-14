@@ -2,6 +2,9 @@ import React, { useState, useRef, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Lenis from "@studio-freight/lenis";
 import LogoLoop from "../components/LogoLoop";
+import omniportalImg from "../assets/omniportalbrowser.avif";
+import kadizImg from "../assets/kadizbrowser.avif";
+import skyviewVideo from "../assets/skyview.webm";
 import { CircleDollarSignIcon } from "@/components/ui/circle-dollar-sign";
 import { ClockIcon } from "@/components/ui/clock";
 import { EarthIcon } from "@/components/ui/earth";
@@ -638,7 +641,7 @@ const PROJECTS = [
     services: ["UI Design", "Web App"], year: "2025",
     desc: "Zero to launch. We designed the full system — identity, onboarding, and a dashboard that turns 80-page contracts into a single answer.",
     stat: { value: "3×", label: "faster contract review" },
-    thumbnail: "/src/assets/omniportalbrowser.avif",
+    thumbnail: omniportalImg,
     projectName: "Omniportal Web Application",
     tools: "Figma  |  UI Design",
     development: "React · TypeScript · Tailwind CSS · Lucide Icons · Supabase · Node.js",
@@ -650,7 +653,7 @@ const PROJECTS = [
     services: ["UI Design", "Web App"], year: "2025",
     desc: "A full-featured POS system built for modern retail. We designed and developed the entire product from the ground up.",
     stat: { value: "4.8★", label: "App Store rating" },
-    thumbnail: "/src/assets/kadizbrowser.avif",
+    thumbnail: kadizImg,
     projectName: "Kadiz POS",
     tools: "Figma  |  UI Design",
     development: "React · TypeScript · Tailwind CSS · Supabase",
@@ -1315,7 +1318,7 @@ function CTASection({ isMobile }: { isMobile: boolean }) {
               objectPosition: "center",
             }}
           >
-            <source src="/src/assets/skyview.webm" type="video/webm" />
+            <source src={skyviewVideo} type="video/webm" />
           </video>
           {/* Dark overlay */}
           <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.42)" }} />
@@ -1984,7 +1987,7 @@ export default function KernSite() {
               }}
             >
               <video
-                src="/src/assets/skyview.webm"
+                src={skyviewVideo}
                 autoPlay muted loop playsInline
                 style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center center" }}
               />

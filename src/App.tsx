@@ -7,7 +7,6 @@ function App() {
       <Routes>
         <Route path="/" element={<Kernsite />} />
         <Route path="*" element={<Navigate to="/" replace />} />
-        
       </Routes>
     </BrowserRouter>
   )
